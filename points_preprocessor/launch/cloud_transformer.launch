@@ -1,0 +1,16 @@
+<!-- Launch file for Cloud Transformer -->
+<launch>
+
+        <arg name="input_point_topic" default="/points_raw_front" /> <!-- input_point_topic, the coordinates of each point in this topic will be transformed to the new frame. -->
+        <arg name="target_point_topic" default="/points_raw_up" /> 
+        <arg name="output_point_topic" default="/points_raw" /> <!-- output_point_topic, output topic name -->
+        <arg name="target_frame" default="velodyne" /> <!-- target_frame, coordinate frame system target -->
+
+        <!-- rosrun points_preprocessor ray_ground_filter -->
+        <node pkg="points_preprocessor" type="cloud_transformer" name="cloud_transformer" output="screen">
+                <param name="input_point_topic" value="$(arg input_point_topic)" />
+                <param name="output_point_topic" value="$(arg output_point_topic)" />
+                <param name="target_point_topic" value="$(arg target_point_topic)" />
+                <param name="target_frame" value="$(arg target_frame)" />
+        </node>
+</launch>

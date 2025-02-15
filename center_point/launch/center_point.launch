@@ -1,0 +1,15 @@
+<launch>
+  <arg name ="viz" default = "false" doc="whether to run a rviz"/>
+  <arg name="input_topic" default="/lidar_top" />
+  
+  <node pkg="center_point" type="center_point" name="center_point" output="screen">
+    <remap from="/l5_points" to="$(arg input_topic)" />
+  </node>
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+        output="screen" ns="/detection/lidar_detector">
+    <param name="objects_src_topic" value="/objects"/>
+  </node>
+  <node if="$(arg viz)" pkg="rviz" name="rviz" type="rviz" args="-d $(find center_point)/rviz/centerpoint.rviz">
+    <remap from="/l5_points" to="$(arg input_topic)" />
+  </node>
+</launch>

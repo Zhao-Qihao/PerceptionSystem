@@ -1,0 +1,15 @@
+<launch>
+    <!-- 定义图片路径参数 -->
+    <arg name="image_path" value="/home/itachi/data/kitti/RawData/2011_09_26/2011_09_26_drive_0005_sync/image_02/data/0000000140.png" />
+    <arg name="frame_rate" value="10" />
+    <arg name="frame_id" default="camera_color_left" />
+    <arg name="output_topic" value="/camera/image_raw" />
+
+    <!-- 启动图片发布节点 -->
+    <node name="image_publisher_node" pkg="pcd_publisher" type="image_publisher_node" output="screen">
+        <param name="image_path" value="$(arg image_path)" />
+        <param name="frame_rate" value="$(arg frame_rate)" />
+        <param name="frame_id" value="$(arg frame_id)" />
+        <param name="output_topic" value="$(arg output_topic)" />
+    </node>
+</launch>

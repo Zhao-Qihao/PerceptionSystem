@@ -1,0 +1,22 @@
+<launch>
+    <!-- 定义参数 -->
+    <!-- <arg name="file_path" default="/home/itachi/data/kitti/RawData/2011_09_26/2011_09_26_drive_0005_sync/velodyne_points/data/0000000140.bin" />
+    <arg name="frame_id" default="velo_link" />
+    <arg name="publish_rate" default="10" />
+    <arg name="output_topic" default="/rslidar_points" /> -->
+
+    <!-- <arg name="file_path" default="/home/itachi/data/nuscenes/samples/LIDAR_TOP/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151603547590.pcd.bin" /> -->
+    <arg name="file_path" default="/home/itachi/data/nuscenes/samples/LIDAR_TOP/n008-2018-08-27-11-48-51-0400__LIDAR_TOP__1535385092150099.pcd.bin" />
+
+    <arg name="frame_id" default="lidar_top" />
+    <arg name="publish_rate" default="10" />
+    <arg name="output_topic" default="/lidar_top" />
+
+    <!-- 启动点云发布节点 -->
+    <node name="point_cloud_publisher_node" pkg="pcd_publisher" type="pcd_publisher_node" output="screen">
+        <param name="file_path" value="$(arg file_path)" />
+        <param name="frame_id" value="$(arg frame_id)" />
+        <param name="publish_rate" value="$(arg publish_rate)" />
+        <param name="output_topic" value="$(arg output_topic)" />
+    </node>
+</launch>

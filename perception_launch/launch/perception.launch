@@ -1,0 +1,38 @@
+<launch>
+    <arg name="use_single_frame" default="false"/>
+    <arg name="detected_objects_visualizer" default="true"/>
+    
+    <group if="$(arg use_single_frame)">
+        <!-- 当 use_single_frame 为 true 时，包含 pcd_publisher 下的 pcd_image_publisher.launch文件, topic为/rslidar_points_h32_left或者/rslidar_points -->    
+        <include file="$(find pcd_publisher)/launch/pcd_image_publisher.launch"/>
+        <include file="$(find center_point)/launch/center_point.launch">
+            <arg name="input_topic" value="/rslidar_points"/>
+        </include>
+        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+            <arg name="input_topic" value="/camera/image_raw"/>
+        </include>
+        <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+            <arg name="points_node" value="/rslidar_points"/>
+            <arg name="output_frame" value="velo_link"/>  <!-- 或者rslidar-->
+        </include>
+    </group>
+    
+    <group unless="$(arg use_single_frame)">
+        <!-- 当 use_single_frame 为 false 时，需要在终端播放rosbag -->
+        <include file="$(find center_point)/launch/center_point.launch">
+            <arg name="input_topic" value="/rslidar_points_h32_left"/>
+        </include>
+        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+            <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
+        </include>
+        <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+            <arg name="points_node" value="/rslidar_points_h32_left"/>
+            <arg name="output_frame" value="rslidar"/> 
+        </include>
+    </group>
+
+    <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch"/>
+    <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
+        <arg name="tracking_frame" value="rslidar"/>
+    </include>
+</launch>

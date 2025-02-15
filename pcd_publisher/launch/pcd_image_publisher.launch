@@ -1,0 +1,7 @@
+<launch>
+    <!-- 包含点云发布节点的 launch 文件 -->
+    <include file="$(find pcd_publisher)/launch/pcd_publisher.launch"/>
+
+    <!-- 包含图片发布节点的 launch 文件 -->
+    <include file="$(find pcd_publisher)/launch/image_publisher.launch"/>
+</launch>

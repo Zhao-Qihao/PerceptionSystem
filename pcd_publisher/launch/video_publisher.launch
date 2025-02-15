@@ -1,0 +1,13 @@
+<launch>
+    <!-- 定义视频路径参数 -->
+    <arg name="video_path" value="/home/itachi/Desktop/image-scrape/videos/drive_video.mp4" />
+    <arg name="frame_rate" value="30" />
+    <arg name="input_topic" value="/camera/image_raw" />
+
+    <!-- 启动视频发布节点 -->
+    <node name="video_publisher_node" pkg="pcd_publisher" type="video_publisher_node" output="screen">
+        <param name="video_path" value="$(arg video_path)" />
+        <param name="frame_rate" value="$(arg frame_rate)" />
+        <param name="input_topic" value="$(arg input_topic)" />
+    </node>
+</launch>

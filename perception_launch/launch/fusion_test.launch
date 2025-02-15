@@ -1,0 +1,6 @@
+<launch>
+    <include file="$(find pcd_publisher)/launch/pcd_image_publisher.launch"/>
+    <include file="$(find center_point)/launch/center_point.launch"/>
+    <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch"/>
+    <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch"/>
+</launch>

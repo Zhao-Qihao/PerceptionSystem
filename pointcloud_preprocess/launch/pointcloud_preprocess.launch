@@ -1,0 +1,15 @@
+<launch>
+    <arg name="clip_min_height" default="-4" />
+    <arg name="clip_max_height" default="0.5" />
+    <arg name="input_topic" default="/cloud_concatenated" />
+    <arg name="output_topic" default="/cloud_preprocessed" />
+    <arg name="remove_self_point" default="true" />
+
+    <node name="pointcloud_preprocess" pkg="pointcloud_preprocess" type="pointcloud_preprocess" output="screen">
+        <param name="clip_min_height" value="$(arg clip_min_height)" />
+        <param name="clip_max_height" value="$(arg clip_max_height)" />
+        <param name="input_topic" value="$(arg input_topic)" />
+        <param name="output_topic" value="$(arg output_topic)" />
+        <param name="remove_self_point" value="$(arg remove_self_point)" />
+    </node>
+</launch>
