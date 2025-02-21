@@ -1,6 +1,7 @@
 std_msgs/Header                 header
 
 uint32                          id
+uint32                          label_id
 string                          label
 float32                         score   #Score as defined by the detection, Optional
 std_msgs/ColorRGBA              color   # Define this object specific color

@@ -1,6 +1,6 @@
 <launch>
   <arg name ="viz" default = "false" doc="whether to run a rviz"/>
-  <arg name="input_topic" default="/lidar_top" />
+  <arg name="input_topic" default="/kitti/velo/pointcloud" />
   
   <node pkg="center_point" type="center_point" name="center_point" output="screen">
     <remap from="/l5_points" to="$(arg input_topic)" />

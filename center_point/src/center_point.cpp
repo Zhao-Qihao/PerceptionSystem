@@ -117,12 +117,13 @@ void CenterPointNode::pubDetectedObject(const std::vector<Bndbox> &boxes,  const
 
     const char* label_names[] = {"car", "truck", "construction_vehicle", "bus", "trailer", "barrier", "motorcycle", "bicycle", "pedestrian", "traffic_cone"};
     object.label = label_names[box.id];
-    if (object.label == "motorcycle" || object.label == "bicycle") {
-        object.label = "cyclist";
-    }
-    else if(object.label == "construction_vehicle" || object.label == "trailer" || object.label == "barrier" || object.label == "traffic_cone") {
-        object.label = "unknown";
-    } // only label 'car', 'truck', 'bus', 'pedestrian', 'cyclist' , 'unknown' are valid
+    object.label_id = box.id;
+    // if (object.label == "motorcycle" || object.label == "bicycle") {
+    //     object.label = "cyclist";
+    // }
+    // else if(object.label == "construction_vehicle" || object.label == "trailer" || object.label == "barrier" || object.label == "traffic_cone") {
+    //     object.label = "unknown";
+    // } // only label 'car', 'truck', 'bus', 'pedestrian', 'cyclist' , 'unknown' are valid
     objects.objects.push_back(object);
   }
   pub_objects_.publish(objects);

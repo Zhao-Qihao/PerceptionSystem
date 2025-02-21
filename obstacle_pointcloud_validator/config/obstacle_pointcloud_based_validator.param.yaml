@@ -1,0 +1,14 @@
+/**:
+  ros__parameters:
+    min_points_num:
+    #origin: UNKNOWN, CAR, TRUCK, BUS, TRAILER, MOTORBIKE, BICYCLE, PEDESTRIAN
+    #"car", "truck", "construction_vehicle", "bus", "trailer", "barrier", "motorcycle", "bicycle", "pedestrian", "traffic_cone", "unknown"
+      [10,     10,                       10,    10,        10,        10,           10,        10,          10,              10,      10]
+
+    max_points_num:
+    #"car", "truck", "construction_vehicle", "bus", "trailer", "barrier", "motorcycle", "bicycle", "pedestrian", "traffic_cone", "unknown"
+      [10,     10,                       10,    10,        10,        10,           10,        10,          10,              10,      10]
+
+    min_points_and_distance_ratio:
+    #"car", "truck", "construction_vehicle", "bus", "trailer", "barrier", "motorcycle", "bicycle", "pedestrian", "traffic_cone", "unknown"
+      [800.0,  800.0,                 800.0,  800.0,    800.0,     800.0,        800.0,     800.0,        800.0,          800.0,    800.0]

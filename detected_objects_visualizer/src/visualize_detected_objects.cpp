@@ -168,7 +168,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
 
   visualization_msgs::MarkerArray visualization_markers;
   // 获取自身车辆的模型标记
-  // visualization_msgs::MarkerArray self_model_marker = VisualizeSelf(in_objects);
+  visualization_msgs::MarkerArray self_model_marker = VisualizeSelf(in_objects);
 
   marker_id_ = 0;
 
@@ -192,8 +192,8 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        centroid_markers.markers.begin(), centroid_markers.markers.end());
     // 插入自身车辆的模型标记
-  // visualization_markers.markers.insert(visualization_markers.markers.end(),
-  //                                      self_model_marker.markers.begin(), self_model_marker.markers.end());
+  visualization_markers.markers.insert(visualization_markers.markers.end(),
+                                       self_model_marker.markers.begin(), self_model_marker.markers.end());
 
   publisher_markers_.publish(visualization_markers);
 
@@ -342,7 +342,7 @@ VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArr
       {
         model.mesh_resource = "package://detected_objects_visualizer/models/person.dae";
       }
-      else if (object.label == "cyclist")
+      else if (object.label == "motorcycle" || object.label == "bicycle")
       {
         model.mesh_resource = "package://detected_objects_visualizer/models/cyclist.obj";
       }
@@ -374,7 +374,7 @@ VisualizeDetectedObjects::ObjectsToModels(const autoware_msgs::DetectedObjectArr
         model.scale.y = 0.5;
         model.scale.z = 0.5;
       }
-      if (object.label == "cyclist") {
+      if ((object.label == "motorcycle" || object.label == "bicycle")) {
         model.scale.x = 0.04;
         model.scale.y = 0.04;
         model.scale.z = 0.04;

@@ -58,13 +58,13 @@ sensor_msgs::PointCloud2 create_point_cloud_msg(const std::vector<float>& points
     cloud_msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
     cloud_msg.fields[3].count = 1;
 
-    cloud_msg.fields[3].name = "ring";
-    cloud_msg.fields[3].offset = 16;
-    cloud_msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
-    cloud_msg.fields[3].count = 1;
+    // cloud_msg.fields[3].name = "ring";
+    // cloud_msg.fields[3].offset = 16;
+    // cloud_msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
+    // cloud_msg.fields[3].count = 1;
 
     // 设置点云数据
-    cloud_msg.point_step = 20;  // 每个点的步长
+    cloud_msg.point_step = 16;  // 每个点的步长      kitti 的步长为16， nuscenes的步长为20
     cloud_msg.row_step = cloud_msg.point_step * cloud_msg.width;
     cloud_msg.data.resize(cloud_msg.row_step * cloud_msg.height);
     memcpy(&cloud_msg.data[0], &points[0], cloud_msg.data.size());
