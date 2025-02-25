@@ -1,6 +1,6 @@
 tensorrt_yoloxp
 TensorRT_YOLOv9_ROS
-ros2_vision_inference
+ros2_vision_inference/models
 AB3D
 range_vision_fusion
 center_point/model
