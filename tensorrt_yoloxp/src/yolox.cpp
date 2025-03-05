@@ -178,11 +178,12 @@ void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_object
         object.pose.position.z = detected_object.z_3d;
         geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(0);
         object.pose.orientation = q;
+        // TODO:根据object的label，修改dimension信息
         object.dimensions.x = 1;
         object.dimensions.y = 1;
         object.dimensions.z = 1;
         object.score = detected_object.score;
-        if (object.label == "bicycle" || object.label == "motorbike" || object.label == "pedestrian" || object.label == "car") {
+        if (filter_dist_objects(object)) {
             objects.objects.push_back(object);     // only label 'car', 'pedestrian', 'cyclist' , 'unknown' are valid
         }
     }
@@ -190,6 +191,10 @@ void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_object
     ROS_INFO("hello");
 }
 
+bool YOLOXNode::filter_dist_objects(autoware_msgs::DetectedObject object) {
+    double dist = sqrt(pow(object.pose.position.x, 2) + pow(object.pose.position.y, 2));
+    return (dist < 50);
+}
 void YOLOXNode::pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
     autoware_msgs::DetectedObjectArray objects;
     objects.header = header;
