@@ -117,7 +117,7 @@ void CenterPointNode::pubDetectedObject(const std::vector<Bndbox> &boxes,  const
 
     const char* label_names[] = {"car", "truck", "construction_vehicle", "bus", "trailer", "barrier", "motorcycle", "bicycle", "pedestrian", "traffic_cone"};
     object.label = label_names[box.id];
-    object.label_id = box.id;
+    // object.label_id = box.id;
     // if (object.label == "motorcycle" || object.label == "bicycle") {
     //     object.label = "cyclist";
     // }

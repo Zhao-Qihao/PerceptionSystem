@@ -175,8 +175,8 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   label_markers = ObjectsToLabels(in_objects);
   arrow_markers = ObjectsToArrows(in_objects);   // velocity arrows
   // polygon_hulls = ObjectsToHulls(in_objects);    // polygon hulls
-  bounding_boxes = ObjectsToBoxes(in_objects);
-  object_models = ObjectsToModels(in_objects);  // dae models
+  // bounding_boxes = ObjectsToBoxes(in_objects);
+  // object_models = ObjectsToModels(in_objects);  // dae models
   centroid_markers = ObjectsToCentroids(in_objects);
 
   visualization_markers.markers.insert(visualization_markers.markers.end(),
@@ -192,8 +192,8 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   visualization_markers.markers.insert(visualization_markers.markers.end(),
                                        centroid_markers.markers.begin(), centroid_markers.markers.end());
     // 插入自身车辆的模型标记
-  visualization_markers.markers.insert(visualization_markers.markers.end(),
-                                       self_model_marker.markers.begin(), self_model_marker.markers.end());
+  // visualization_markers.markers.insert(visualization_markers.markers.end(),
+  //                                      self_model_marker.markers.begin(), self_model_marker.markers.end());
 
   publisher_markers_.publish(visualization_markers);
 

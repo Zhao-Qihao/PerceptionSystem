@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="mono3d_flag" default="true"/>
-    <arg name="mono3d_ckpt_file" default="/home/itachi/project/catkin_ws_test/src/ros2_vision_inference/models/mono3d_yolox_576_768.onnx"/>
+    <arg name="mono3d_ckpt_file" default="/home/itachi/project/catkin_ws_test/src/ros2_vision_inference/models/dla34_deform_576_768_simplified.onnx"/>
 
     <arg name="seg_flag" default="false"/>
     <arg name="seg_ckpt_file" default="/home/itachi/project/catkin_ws_test/src/ros2_vision_inference/models/bisenetv1.onnx"/>
@@ -28,5 +28,10 @@
         <remap from="/camera_info" to="$(arg camera_param)"/>
         <remap from="/bboxes" to="$(arg bbox_topic)"/>
     </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_03"
+        output="screen" ns="/mono3d">
+    <param name="objects_src_topic" value="/bbox"/>
+  </node>
 
 </launch>

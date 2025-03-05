@@ -2,7 +2,8 @@
 <launch>
   <arg name="namespace" default="/casper_auto/tracking/object_tracker"/>
   <!-- <arg name="tracker_input_topic" default="/detection/lidar_detector/objects" /> -->
-  <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
+  <!-- <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" /> -->
+  <arg name="tracker_input_topic" default="/detection/lidar_detector/objects" />
   <arg name="tracker_output_topic" default="/casper_auto/tracking/object_tracker/objects" />
 
   <arg name="tracking_frame" default="velo_link" />

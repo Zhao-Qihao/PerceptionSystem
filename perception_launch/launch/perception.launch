@@ -22,17 +22,17 @@
         <include file="$(find center_point)/launch/center_point.launch">
             <arg name="input_topic" value="/rslidar_points_h32_left"/>
         </include>
-        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+        <!-- <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
             <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
         </include>
         <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
             <arg name="points_node" value="/rslidar_points_h32_left"/>
             <arg name="output_frame" value="rslidar"/> 
-        </include>
+        </include> -->
     </group>
 
-    <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch"/>
+    <!-- <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch"/> -->
     <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
-        <arg name="tracking_frame" value="rslidar"/>
+        <arg name="tracking_frame" value="velo_link"/>
     </include>
 </launch>

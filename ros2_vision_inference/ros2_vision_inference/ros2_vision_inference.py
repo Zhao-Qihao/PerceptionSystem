@@ -14,6 +14,8 @@ from seg_labels import PALETTE
 import time
 import tf2_ros
 import geometry_msgs.msg
+import tf.transformations as transformations
+from geometry_msgs.msg import Quaternion
 import autoware_msgs
 import warnings
 warnings.filterwarnings("ignore")
@@ -97,37 +99,63 @@ class BaseInferenceThread(threading.Thread):
         return self._output
 
 class Mono3D(BaseInferenceThread):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     def run(self):
         global MONO3D_NAMES
-        object = autoware_msgs.msg.DetectedObject()
-
         start_time = time.time()
         resized_image, resized_P = self.resize(self.image, self.P)
         input_numpy = np.ascontiguousarray(np.transpose(normalize_image(resized_image), (2, 0, 1))[None], dtype=np.float32)
         P_numpy = np.array(resized_P, dtype=np.float32)[None]
+        print(input_numpy.shape)
+        print(P_numpy)
         outputs = self.ort_session.run(None, {'image': input_numpy, 'P2': P_numpy})
         # print('shape:', outputs.shape)
-        print('value:', outputs)
+        print('value:', len(outputs[0]))
         scores = np.array(outputs[0]) # N
         bboxes = np.array(outputs[1]) # N, 12
         cls_indexes = outputs[2] # N
 
         cls_names = [MONO3D_NAMES[cls_index] for cls_index in cls_indexes]
 
-        objects = []
+
+        objects = autoware_msgs.msg.DetectedObjectArray()
+        object = autoware_msgs.msg.DetectedObject()
+        # objects.header.frame_id = self.frame_id
+        # object.header.frame_id = self.frame_id
         N = len(bboxes)
-        
-        
+
         for i in range(N):
-            obj = {}
-            obj['whl'] = bboxes[i, 7:10]
-            obj['theta'] = bboxes[i, 11]
-            obj['score'] = scores[i]
-            obj['type_name'] = cls_names[i]
-            obj['xyz'] = bboxes[i, 4:7]
-            objects.append(obj)
+            object.valid = True
+            object.pose_reliable = True
+            object.pose.position.x = bboxes[i, 4]
+            object.pose.position.y = bboxes[i, 5]
+            object.pose.position.z = bboxes[i, 6]
+            object.dimensions.x = bboxes[i, 7]
+            object.dimensions.y = bboxes[i, 8]
+            object.dimensions.z = bboxes[i, 9]
+            object.pose.orientation = Quaternion(*transformations.quaternion_from_euler(0, 0, bboxes[i, 11]))
+            object.score = scores[i]
+            object.label = cls_names[i]
+
+            objects.objects.append(object)
         self._output = objects
-        print(f"mono3d runtime: {time.time() - start_time}")
+
+
+        # objects = []
+        # N = len(bboxes)
+        
+        
+        # for i in range(N):
+        #     obj = {}
+        #     obj['whl'] = bboxes[i, 7:10]
+        #     obj['theta'] = bboxes[i, 11]
+        #     obj['score'] = scores[i]
+        #     obj['type_name'] = cls_names[i]
+        #     obj['xyz'] = bboxes[i, 4:7]
+        #     objects.append(obj)
+        # self._output = objects
+        # print(f"mono3d runtime: {time.time() - start_time}")
 
 class SegmentationThread(BaseInferenceThread):
     def run(self):
@@ -152,8 +180,8 @@ class VisionInferenceNode():
     def __init__(self):
         self.ros_interface = ROSInterface("VisionInferenceNode")
         self._read_params()
-        self._init_model()
         self._init_static_memory()
+        self._init_model()
         self._init_topics()
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
@@ -210,7 +238,9 @@ class VisionInferenceNode():
     
 
     def _init_topics(self):
-        self.bbox_publish = self.ros_interface.create_publisher(MarkerArray, "mono3d/bbox", queue_size=10)
+        # self.bbox_publish = self.ros_interface.create_publisher(MarkerArray, "mono3d/bbox", queue_size=10)
+        self.bbox_publish = rospy.Publisher("/mono3d/bbox", autoware_msgs.msg.DetectedObjectArray, queue_size=10)
+        self.detected_img_pub = self.ros_interface.create_publisher(Image, "detected_image", queue_size=10)
         self.ros_interface.create_publisher(Image, "seg_image", queue_size=10)
         self.ros_interface.create_publisher(Image, "depth_image", queue_size=10)
         self.ros_interface.create_publisher(PointCloud2, "point_cloud", queue_size=10)
@@ -226,6 +256,7 @@ class VisionInferenceNode():
         self.P[0:3, 0:3] = np.array(msg.K).reshape((3, 3))
         # print(self.P)
         self.frame_id = msg.header.frame_id
+        self.header = msg.header
 
     def processing_image(self, image:np.array):
         starting = time.time()
@@ -248,31 +279,41 @@ class VisionInferenceNode():
 
         # publish objects
         if self.mono3d_flag:
-            marker_array = MarkerArray()
-            for i, obj in enumerate(objects):
-                class_name = obj['type_name']
-                # print(i, ", ", obj)
-                # print(self.frame_id)
-                # Convert 3D bounding box to velo_link coordinate system
-                try:
-                    T_velo_camera = self.get_transform_matrix('velo_link', self.frame_id)
-                    bbox_vertices_camera = self.compute_bbox_vertices(obj)
-                    bbox_vertices_velo = self.transform_points(bbox_vertices_camera, T_velo_camera)
-                    obj['bbox_vertices_velo'] = bbox_vertices_velo
+            objects.header.frame_id = self.frame_id
+            for object in objects.objects:
+                object.header.frame_id = self.frame_id
 
-                    # print(f"Object {i} bbox vertices in velo_link: {bbox_vertices_velo}")
-                except Exception as e:
-                    rospy.logerr(f"Failed to transform bounding box: {e}")
-                # 更新 obj 的 xyz 和 whl
-                update_obj_from_bbox_vertices(obj)
-                marker = self.ros_interface.object_to_marker(obj,
-                                                            # self.frame_id,
-                                                            "velo_link",
-                                                            i,
-                                                            color=COLOR_MAPPINGS[class_name],
-                                                            duration=0.2) # color maps
-                marker_array.markers.append(marker)
-            self.bbox_publish.publish(marker_array)
+            # 转换到 velo_link 坐标系
+            transformed_objects = self.transform_objects_to_velo_link(objects)
+            self.bbox_publish.publish(transformed_objects)
+                
+            # self.bbox_publish.publish(objects)
+            # marker_array = MarkerArray()
+            # for i, obj in enumerate(objects):
+            #     class_name = obj['type_name']
+            #     # print(i, ", ", obj)
+            #     # print(self.P)
+            #     # print(self.frame_id)
+            #     # Convert 3D bounding box to velo_link coordinate system
+            #     try:
+            #         T_velo_camera = self.get_transform_matrix('velo_link', self.frame_id)
+            #         bbox_vertices_camera = self.compute_bbox_vertices(obj)
+            #         bbox_vertices_velo = self.transform_points(bbox_vertices_camera, T_velo_camera)
+            #         obj['bbox_vertices_velo'] = bbox_vertices_velo
+
+            #         # print(f"Object {i} bbox vertices in velo_link: {bbox_vertices_velo}")
+            #     except Exception as e:
+            #         rospy.logerr(f"Failed to transform bounding box: {e}")
+            #     # 更新 obj 的 xyz 和 whl
+            #     update_obj_from_bbox_vertices(obj)
+            #     marker = self.ros_interface.object_to_marker(obj,
+            #                                                 # self.frame_id,
+            #                                                 "velo_link",
+            #                                                 i,
+            #                                                 color=COLOR_MAPPINGS[class_name],
+            #                                                 duration=0.2) # color maps
+            #     marker_array.markers.append(marker)
+            # self.bbox_publish.publish(marker_array)
 
         # publish colorized seg
         if self.seg_flag:
@@ -386,28 +427,85 @@ class VisionInferenceNode():
             [    q[1, 3]-q[2, 0],     q[2, 3]+q[1, 0], 1.0-q[1, 1]-q[2, 2], 0.0],
             [                0.0,                 0.0,                 0.0, 1.0]])      
 
-def update_obj_from_bbox_vertices(obj):
-    # 提取边界框顶点
-    bbox_vertices_velo = obj['bbox_vertices_velo']
-    
-    # 计算中心位置 (xyz)
-    center_x = np.mean(bbox_vertices_velo[:, 0])
-    center_y = np.mean(bbox_vertices_velo[:, 1])
-    center_z = np.mean(bbox_vertices_velo[:, 2])
-    obj['xyz'] = [center_x, center_y, center_z]
-    
-    # 计算尺寸 (whl)
-    min_x = np.min(bbox_vertices_velo[:, 0])
-    max_x = np.max(bbox_vertices_velo[:, 0])
-    min_y = np.min(bbox_vertices_velo[:, 1])
-    max_y = np.max(bbox_vertices_velo[:, 1])
-    min_z = np.min(bbox_vertices_velo[:, 2])
-    max_z = np.max(bbox_vertices_velo[:, 2])
-    
-    width = max_x - min_x
-    height = max_y - min_y
-    length = max_z - min_z
-    obj['whl'] = [width, height, length]
+    def update_obj_from_bbox_vertices(obj):
+        # 提取边界框顶点
+        bbox_vertices_velo = obj['bbox_vertices_velo']
+        
+        # 计算中心位置 (xyz)
+        center_x = np.mean(bbox_vertices_velo[:, 0])
+        center_y = np.mean(bbox_vertices_velo[:, 1])
+        center_z = np.mean(bbox_vertices_velo[:, 2])
+        obj['xyz'] = [center_x, center_y, center_z]
+        
+        # 计算尺寸 (whl)
+        min_x = np.min(bbox_vertices_velo[:, 0])
+        max_x = np.max(bbox_vertices_velo[:, 0])
+        min_y = np.min(bbox_vertices_velo[:, 1])
+        max_y = np.max(bbox_vertices_velo[:, 1])
+        min_z = np.min(bbox_vertices_velo[:, 2])
+        max_z = np.max(bbox_vertices_velo[:, 2])
+        
+        width = max_x - min_x
+        height = max_y - min_y
+        length = max_z - min_z
+        obj['whl'] = [width, height, length]
+    def transform_objects_to_velo_link(self, objects):
+        transformed_objects = autoware_msgs.msg.DetectedObjectArray()
+        transformed_objects.header.frame_id = "velo_link"
+
+        for obj in objects.objects:
+            # 提取边界框中心点
+            center_point_cam = np.array([obj.pose.position.x, obj.pose.position.y, obj.pose.position.z, 1.0])
+
+            # 获取变换矩阵
+            T_velo_cam = self.get_transform_matrix("velo_link", self.frame_id)
+            if T_velo_cam is None:
+                rospy.logerr("Failed to get transform matrix from {} to velo_link".format(self.frame_id))
+                continue
+
+            # 转换中心点到 velo_link 坐标系
+            center_point_velo = np.dot(T_velo_cam, center_point_cam)[:3]
+
+            # 转换方向四元数
+            orientation_cam = (obj.pose.orientation.x, obj.pose.orientation.y, obj.pose.orientation.z, obj.pose.orientation.w)
+            orientation_velo = self.transform_orientation(orientation_cam, T_velo_cam)
+
+            # 创建新的 DetectedObject
+            new_obj = autoware_msgs.msg.DetectedObject()
+            new_obj.header.frame_id = "velo_link"
+            new_obj.valid = obj.valid
+            new_obj.pose_reliable = obj.pose_reliable
+            new_obj.pose.position.x = center_point_velo[0]
+            new_obj.pose.position.y = center_point_velo[1]
+            new_obj.pose.position.z = center_point_velo[2]
+            new_obj.dimensions.x = obj.dimensions.x
+            new_obj.dimensions.y = obj.dimensions.y
+            new_obj.dimensions.z = obj.dimensions.z
+            new_obj.pose.orientation.x = orientation_velo[0]
+            new_obj.pose.orientation.y = orientation_velo[1]
+            new_obj.pose.orientation.z = orientation_velo[2]
+            new_obj.pose.orientation.w = orientation_velo[3]
+            new_obj.score = obj.score
+            new_obj.label = obj.label
+
+            transformed_objects.objects.append(new_obj)
+
+        return transformed_objects
+
+    def transform_orientation(self, orientation_cam, T_velo_cam):
+        # 将四元数转换为旋转矩阵
+        R_cam = transformations.quaternion_matrix(orientation_cam)
+
+        # 转换旋转矩阵到 velo_link 坐标系
+        R_velo = np.dot(T_velo_cam[:3, :3], R_cam[:3, :3])
+
+        # 构建完整的 4x4 旋转矩阵
+        R_velo_4x4 = np.eye(4)
+        R_velo_4x4[:3, :3] = R_velo
+
+        # 将旋转矩阵转换回四元数
+        orientation_velo = transformations.quaternion_from_matrix(R_velo_4x4)
+        return orientation_velo
 
 def main(args=None):
     VisionInferenceNode()
