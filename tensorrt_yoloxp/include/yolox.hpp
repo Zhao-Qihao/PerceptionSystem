@@ -24,7 +24,8 @@ public:
     void pubDetectedImage(const tensorrt_yolox::ObjectArrays& objects, const cv::Mat& image, const std_msgs::Header& header);
     void pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header);
     void pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header);
-    bool filter_dist_objects(autoware_msgs::DetectedObject object);
+    bool filter_dist_objects(autoware_msgs::DetectedObject& object);
+    void giveDimentions(autoware_msgs::DetectedObject& object);
     bool getProfFlag() const;
     void printProfiling() const;
 

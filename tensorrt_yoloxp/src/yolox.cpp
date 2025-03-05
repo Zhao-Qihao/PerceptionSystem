@@ -157,8 +157,8 @@ void YOLOXNode::image2point_IPM(tensorrt_yolox::Object& object) {
     object.x_3d = worldPoint.at<double>(2) + 0.27;
     object.y_3d = -worldPoint.at<double>(0);
     object.z_3d = -Z;
-    // 输出3D点坐标
-    std::cout << "3D Point in Camera Coordinates: (" << object.x_3d << ", " << object.y_3d << ", " << Z << ")" << std::endl;
+    // 打印3D点坐标
+    // std::cout << "3D Point in Camera Coordinates: (" << object.x_3d << ", " << object.y_3d << ", " << Z << ")" << std::endl;
 }
 
 void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
@@ -179,9 +179,7 @@ void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_object
         geometry_msgs::Quaternion q = tf::createQuaternionMsgFromYaw(0);
         object.pose.orientation = q;
         // TODO:根据object的label，修改dimension信息
-        object.dimensions.x = 1;
-        object.dimensions.y = 1;
-        object.dimensions.z = 1;
+        giveDimentions(object);
         object.score = detected_object.score;
         if (filter_dist_objects(object)) {
             objects.objects.push_back(object);     // only label 'car', 'pedestrian', 'cyclist' , 'unknown' are valid
@@ -191,10 +189,45 @@ void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_object
     ROS_INFO("hello");
 }
 
-bool YOLOXNode::filter_dist_objects(autoware_msgs::DetectedObject object) {
+bool YOLOXNode::filter_dist_objects(autoware_msgs::DetectedObject& object) {
     double dist = sqrt(pow(object.pose.position.x, 2) + pow(object.pose.position.y, 2));
     return (dist < 50);
 }
+
+void YOLOXNode::giveDimentions(autoware_msgs::DetectedObject& object) {
+    if (object.label == "car") {
+        object.dimensions.y = 1.8;
+        object.dimensions.x = 3.9;
+        object.dimensions.z = 1.6;
+    }
+    else if (object.label == "truck") {
+        object.dimensions.y = 3.2;
+        object.dimensions.x = 3.8;
+        object.dimensions.z = 2.5;
+    }
+    else if (object.label == "bus") {
+        object.dimensions.y = 3.2;
+        object.dimensions.x = 6.8;
+        object.dimensions.z = 2.5;
+    }
+    else if (object.label == "bicycle" || object.label == "motorcycle") {
+        object.dimensions.y = 0.6;
+        object.dimensions.x = 1.5;
+        object.dimensions.z = 1.5;
+    }
+    else if (object.label == "pedestrian") {
+        object.dimensions.y = 0.6;
+        object.dimensions.x = 0.8;
+        object.dimensions.z = 1.8;
+    }
+    else if (object.label == "animal" || object.label == "unknown") {
+        object.label = "barrier";
+        object.dimensions.y = 0.6;
+        object.dimensions.x = 0.8;
+        object.dimensions.z = 1.8;
+    }
+}
+
 void YOLOXNode::pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
     autoware_msgs::DetectedObjectArray objects;
     objects.header = header;
@@ -202,11 +235,8 @@ void YOLOXNode::pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_
         autoware_msgs::DetectedObject object;
         object.header = header;
         object.label = class_name_[detected_object.type];
-        if (object.label == "bicycle" || object.label == "motorbike") {
-            object.label = "cyclist";
-        }
-        else if (object.label == "animal") {
-            object.label = "unknown";
+        if (object.label == "animal" || object.label == "unknown") {
+            object.label = "barrier";
         } // only label 'car', 'truck', 'bus', 'pedestrian', 'cyclist' , 'unknown' are valid
         object.valid = true;
         object.x = detected_object.x_offset;
