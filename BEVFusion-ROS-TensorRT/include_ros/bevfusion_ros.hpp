@@ -25,7 +25,7 @@
 
 class RosNode 
 { 
-  std::string model_name_, precition_;
+  std::string model_name_, precision_;
   ros::NodeHandle n_;
   ros::Publisher pub_img_;
 

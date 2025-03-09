@@ -4,10 +4,10 @@
 #include "bevfusion_ros.hpp"
 
 RosNode::RosNode(const std::string model_name, const std::string  precision)
-  : model_name_(model_name), precition_(precision)
+  : model_name_(model_name), precision_(precision)
 { 
   
-  bevfusion_node_.reset(new BEVFusionNode(model_name_, precition_));
+  bevfusion_node_.reset(new BEVFusionNode(model_name_, precision_));
   getTopicName();
   pub_img_ = n_.advertise<sensor_msgs::Image>("/bevfusion/image_raw", 10);
   sub_cloud_.subscribe(n_, topic_cloud_, 10);
@@ -81,6 +81,7 @@ void RosNode::callback(const sensor_msgs::PointCloud2ConstPtr& msg_cloud,
     lidar_arr[index + 4] = 0;
   }
   bevfusion_node_->Inference(images, lidar_arr, cloud_ptr->points.size());
+  free_images(images);
 
   cv::Mat img = cv::imread((pkg_path + "/configs/cuda-bevfusion.jpg").c_str());
   cv::resize(img, img, cv::Size(img.size().width /2, img.size().height /2));

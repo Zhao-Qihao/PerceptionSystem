@@ -141,21 +141,21 @@ target_link_libraries(demo
 )
 
 # bevfusion_node
-# cuda_add_executable(bevfusion_node
-#   src_ros/bevfusion_ros_node.cpp 
-#   src_ros/bevfusion_ros.cpp 
-#   src_ros/bevfusion_plugin.cpp
-#   ${VISUALIZE_FILES}
-# )
+cuda_add_executable(bevfusion_node
+  src_ros/bevfusion_ros_node.cpp 
+  src_ros/bevfusion_ros.cpp 
+  src_ros/bevfusion_plugin.cpp
+  ${VISUALIZE_FILES}
+)
 
-# target_link_libraries(bevfusion_node
-#   bevfusion_core
-#   libnvinfer.so
-#   libspconv.so
-#   ${Protobuf_LIBRARIES}
-#   libnvinfer_plugin.so
+target_link_libraries(bevfusion_node
+  bevfusion_core
+  libnvinfer.so
+  libspconv.so
+  ${Protobuf_LIBRARIES}
+  libnvinfer_plugin.so
   
-#   ${OpenCV_LIBS}
-#   ${PCL_LIBRARIES}
-#   ${catkin_LIBRARIES}
-# )
+  ${OpenCV_LIBS}
+  ${PCL_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
