@@ -16,7 +16,7 @@
 
 #include <tf/transform_listener.h>
 
-#include <vector_map/vector_map.h>
+// #include <vector_map/vector_map.h>
 
 #include <autoware_msgs/DetectedObject.h>
 #include <autoware_msgs/DetectedObjectArray.h>

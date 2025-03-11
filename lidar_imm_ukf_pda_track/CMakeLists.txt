@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   roslint
   tf
-  vector_map
 )
 
 

@@ -20,12 +20,6 @@ ImmUkfPda::ImmUkfPda()
   private_nh_.param<double>("merge_distance_threshold", merge_distance_threshold_, 0.5);
   private_nh_.param<bool>("use_sukf", use_sukf_, false);
 
-  // for vectormap assisted tracking
-  private_nh_.param<bool>("use_vectormap", use_vectormap_, false);
-  private_nh_.param<double>("lane_direction_chi_threshold", lane_direction_chi_threshold_, 2.71);
-  private_nh_.param<double>("nearest_lane_distance_threshold", nearest_lane_distance_threshold_, 1.0);
-  private_nh_.param<std::string>("vectormap_frame", vectormap_frame_, "map");
-
   // rosparam for benchmark
   private_nh_.param<bool>("is_benchmark", is_benchmark_, false);
   private_nh_.param<std::string>("kitti_data_dir", kitti_data_dir_, "");
@@ -40,23 +34,11 @@ void ImmUkfPda::run()
 {
   pub_object_array_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>("/detection/objects", 1);
   sub_detected_array_ = node_handle_.subscribe("/detection/fusion_tools/objects", 1, &ImmUkfPda::callback, this);
-
-  if (use_vectormap_)
-  {
-    vmap_.subscribe(private_nh_, vector_map::Category::POINT |
-                                 vector_map::Category::NODE  |
-                                 vector_map::Category::LANE, 1);
-  }
 }
 
 void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
 {
   input_header_ = input.header;
-
-  if(use_vectormap_)
-  {
-    checkVectormapSubscription();
-  }
 
   bool success = updateNecessaryTransform();
   if (!success)
@@ -79,22 +61,6 @@ void ImmUkfPda::callback(const autoware_msgs::DetectedObjectArray& input)
   }
 }
 
-void ImmUkfPda::checkVectormapSubscription()
-{
-  if (use_vectormap_ && !has_subscribed_vectormap_)
-  {
-    lanes_ = vmap_.findByFilter([](const vector_map_msgs::Lane& lane) { return true; });
-    if (lanes_.empty())
-    {
-      ROS_INFO("Has not subscribed vectormap");
-    }
-    else
-    {
-      has_subscribed_vectormap_ = true;
-    }
-  }
-}
-
 bool ImmUkfPda::updateNecessaryTransform()
 {
   bool success = true;
@@ -107,19 +73,6 @@ bool ImmUkfPda::updateNecessaryTransform()
   {
     ROS_ERROR("%s", ex.what());
     success = false;
-  }
-  if (use_vectormap_ && has_subscribed_vectormap_)
-  {
-    try
-    {
-      tf_listener_.waitForTransform(vectormap_frame_, tracking_frame_, ros::Time(0), ros::Duration(1.0));
-      tf_listener_.lookupTransform(vectormap_frame_, tracking_frame_, ros::Time(0), tracking_frame2lane_frame_);
-      tf_listener_.lookupTransform(tracking_frame_, vectormap_frame_, ros::Time(0), lane_frame2tracking_frame_);
-    }
-    catch (tf::TransformException ex)
-    {
-      ROS_ERROR("%s", ex.what());
-    }
   }
   return success;
 }
@@ -205,94 +158,8 @@ void ImmUkfPda::measurementValidation(const autoware_msgs::DetectedObjectArray& 
   if (exists_smallest_nis_object)
   {
     matching_vec[smallest_nis_ind] = true;
-    if (use_vectormap_ && has_subscribed_vectormap_)
-    {
-      autoware_msgs::DetectedObject direction_updated_object;
-      bool use_direction_meas =
-          updateDirection(smallest_nis, target.object_, direction_updated_object, target);
-      if (use_direction_meas)
-      {
-        object_vec.push_back(direction_updated_object);
-      }
-      else
-      {
-        object_vec.push_back(target.object_);
-      }
-    }
-    else
-    {
-      object_vec.push_back(target.object_);
-    }
+    object_vec.push_back(target.object_);
   }
-}
-
-bool ImmUkfPda::updateDirection(const double smallest_nis, const autoware_msgs::DetectedObject& in_object,
-                                    autoware_msgs::DetectedObject& out_object, UKF& target)
-{
-  bool use_lane_direction = false;
-  target.is_direction_cv_available_ = false;
-  target.is_direction_ctrv_available_ = false;
-  bool get_lane_success = storeObjectWithNearestLaneDirection(in_object, out_object);
-  if (!get_lane_success)
-  {
-    return use_lane_direction;
-  }
-  target.checkLaneDirectionAvailability(out_object, lane_direction_chi_threshold_, use_sukf_);
-  if (target.is_direction_cv_available_ || target.is_direction_ctrv_available_)
-  {
-    use_lane_direction = true;
-  }
-  return use_lane_direction;
-}
-
-bool ImmUkfPda::storeObjectWithNearestLaneDirection(const autoware_msgs::DetectedObject& in_object,
-                                                 autoware_msgs::DetectedObject& out_object)
-{
-  geometry_msgs::Pose lane_frame_pose = getTransformedPose(in_object.pose, tracking_frame2lane_frame_);
-  double min_dist = std::numeric_limits<double>::max();
-
-  double min_yaw = 0;
-  for (auto const& lane : lanes_)
-  {
-    vector_map_msgs::Node node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.bnid));
-    vector_map_msgs::Point point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(node.pid));
-    double distance = std::sqrt(std::pow(point.bx - lane_frame_pose.position.y, 2) +
-                                std::pow(point.ly - lane_frame_pose.position.x, 2));
-    if (distance < min_dist)
-    {
-      min_dist = distance;
-      vector_map_msgs::Node front_node = vmap_.findByKey(vector_map::Key<vector_map_msgs::Node>(lane.fnid));
-      vector_map_msgs::Point front_point = vmap_.findByKey(vector_map::Key<vector_map_msgs::Point>(front_node.pid));
-      min_yaw = std::atan2((front_point.bx - point.bx), (front_point.ly - point.ly));
-    }
-  }
-
-  bool success = false;
-  if (min_dist < nearest_lane_distance_threshold_)
-  {
-    success = true;
-  }
-  else
-  {
-    return success;
-  }
-
-  // map yaw in rotation matrix representation
-  tf::Quaternion map_quat = tf::createQuaternionFromYaw(min_yaw);
-  tf::Matrix3x3 map_matrix(map_quat);
-
-  // vectormap_frame to tracking_frame rotation matrix
-  tf::Quaternion rotation_quat = lane_frame2tracking_frame_.getRotation();
-  tf::Matrix3x3 rotation_matrix(rotation_quat);
-
-  // rotated yaw in matrix representation
-  tf::Matrix3x3 rotated_matrix = rotation_matrix * map_matrix;
-  double roll, pitch, yaw;
-  rotated_matrix.getRPY(roll, pitch, yaw);
-
-  out_object = in_object;
-  out_object.angle = yaw;
-  return success;
 }
 
 void ImmUkfPda::updateTargetWithAssociatedObject(const std::vector<autoware_msgs::DetectedObject>& object_vec,
