@@ -19,20 +19,24 @@
     
     <group unless="$(arg use_single_frame)">
         <!-- 当 use_single_frame 为 false 时，需要在终端播放rosbag -->
-        <include file="$(find center_point)/launch/center_point.launch">
-            <arg name="input_topic" value="/rslidar_points_h32_left"/>
+        <include file="$(find autoware_lidar_centerpoint)/launch/lidar_centerpoint.launch">
+            <arg name="input/pointcloud" value="/rslidar_points"/>
         </include>
         <!-- <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
             <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
-        </include>
-        <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
-            <arg name="points_node" value="/rslidar_points_h32_left"/>
-            <arg name="output_frame" value="rslidar"/> 
         </include> -->
+        <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+            <arg name="points_node" value="/rslidar_points"/>
+            <arg name="output_frame" value="rslidar"/> 
+        </include>
     </group>
 
-    <!-- <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch"/> -->
+    <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch">
+        <arg name="detected_objects_range" value="/detection/lidar_centerpoint/objects"/>
+        <arg name="detected_objects_vision" value="/detection/lidar_euclidean/objects"/>
+    </include>
     <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
-        <arg name="tracking_frame" value="velo_link"/>
+        <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
+        <arg name="tracking_frame" value="rslidar"/>
     </include>
 </launch>

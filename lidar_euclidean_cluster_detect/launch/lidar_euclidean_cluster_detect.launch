@@ -1,14 +1,14 @@
 <!-- -->
 <launch>
   <!-- <arg name="points_node" default="/kitti/velo/pointcloud" />CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
-  <arg name="points_node" default="/rslidar_points_h32_left" />
-  <arg name="remove_ground" default="false" />
+  <arg name="points_node" default="/rslidar_points" />
+  <arg name="remove_ground" default="true" />
   <arg name="downsample_cloud" default="true" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
   <arg name="leaf_size" default="0.15" /><!-- Voxel Grid Filter leaf size-->
   <arg name="cluster_size_min" default="20" /><!-- Minimum number of points to consider a cluster as valid, defualt 20 -->
   <arg name="cluster_size_max" default="100000" /><!-- Maximum number of points to allow inside a cluster, default 100000 -->
   <arg name="sync" default="false" />
-  <arg name="use_diffnormals" default="true" />
+  <arg name="use_diffnormals" default="fasle" />  <!-- 开这个参数cpu占用率会高30倍-->
   <arg name="pose_estimation" default="true" />
   <arg name="clip_min_height" default="-3.5" />
   <arg name="clip_max_height" default="1.0" />
@@ -16,7 +16,7 @@
   <arg name="keep_lanes" default="true" />
   <arg name="keep_lane_left_distance" default="9" />
   <arg name="keep_lane_right_distance" default="4.5" />
-  <arg name="remove_behind_lane" default="true" />
+  <arg name="remove_behind_lane" default="false" />
   <arg name="keep_behind_lane_distance" default="20" />
   <arg name="cluster_merge_threshold" default="1.5" />
   <arg name="clustering_distance" default="0.75" />
@@ -66,17 +66,17 @@
 
     <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
 
-    <remap from="/points_cluster" to="/casper_auto/detection/points_cluster" />
-    <remap from="/points_ground" to="/casper_auto/detection/points_ground" />
-    <remap from="/points_lanes" to="/casper_auto/detection/points_lanes" />
+    <remap from="/points_cluster" to="/detection/lidar_euclidean/points_cluster" />
+    <remap from="/points_ground" to="/detection/lidar_euclidean/points_ground" />
+    <remap from="/points_lanes" to="/detection/lidar_euclidean/points_lanes" />
 
-    <remap from="/detection/lidar_detector/cloud_clusters" to="/casper_auto/detection/lidar_detector/cloud_clusters" />
-    <remap from="/detection/lidar_detector/objects" to="/casper_auto/detection/lidar_detector/objects" />
+    <remap from="/detection/lidar_detector/cloud_clusters" to="/detection/lidar_euclidean/cloud_clusters" />
+    <remap from="/detection/lidar_detector/objects" to="/detection/lidar_euclidean/objects" />
   </node>
 
   <group if="$(arg enable_visualizer)">
     <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
-          output="log" ns="/casper_auto/detection/lidar_detector">
+          output="log" ns="/detection/lidar_euclidean">
       <param name="objects_src_topic" value="/objects"/>
     </node>
   </group>

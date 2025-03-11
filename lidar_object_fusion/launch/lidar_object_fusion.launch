@@ -1,9 +1,9 @@
 <launch>
-  <arg name="detected_objects_range" default="/detection/lidar_detector/objects"/>
-  <arg name="detected_objects_vision" default="/casper_auto/detection/lidar_detector/objects"/>
+  <arg name="detected_objects_range" default="/detection/lidar_centerpoint/objects"/>
+  <arg name="detected_objects_vision" default="/detection/lidar_euclidean/objects"/>
   <arg name="sync_topics" default="true"/>
   <arg name="distanceThreshold" default="1.3"/>  <!--距离超过1.3米的两个物体就不认为会有是一个物体的可能性-->
-  <arg name="overlap_threshold" default="0.5"/>
+  <arg name="overlap_threshold" default="0.5"/>  <!--TODO: 两个物体重叠超过0.5的就认为两个物体是一个物体-->
   <arg name="namespace" default="/detection/fusion_tools"/>
   <arg name="viz" default="false"/>
 

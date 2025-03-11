@@ -324,7 +324,7 @@ EuclideanClusterDetector::EuclideanClusterDetector()
   nh_private_.param("clustering_distance", clustering_distance_, 0.75);
   ROS_INFO("[%s] clustering_distance: %f", APP_NAME, clustering_distance_);
 
-  nh_private_.param("use_gpu", use_gpu_, false);
+  nh_private_.param("use_gpu", use_gpu_, true);
   ROS_INFO("[%s] use_gpu: %d", APP_NAME, use_gpu_);
 
   nh_private_.param("use_multiple_thres", use_multiple_thres_, false);
@@ -403,8 +403,7 @@ EuclideanClusterDetector::EuclideanClusterDetector()
 
 void EuclideanClusterDetector::rawPointCloudCallback(
     const sensor_msgs::PointCloud2ConstPtr &in_sensor_cloud) {
-  // start_ = std::chrono::system_clock::now();
-
+  start_ = std::chrono::system_clock::now();
   if (!using_sensor_cloud_) {
     using_sensor_cloud_ = true;
 
@@ -476,7 +475,7 @@ void EuclideanClusterDetector::rawPointCloudCallback(
     segmentByDistance(diffnormals_cloud_ptr, colored_clustered_cloud_ptr,
                       centroids, cloud_clusters);
 
-    publishColorCloud(&cluster_cloud_pub_, colored_clustered_cloud_ptr);
+    // publishColorCloud(&cluster_cloud_pub_, colored_clustered_cloud_ptr);
 
     centroids.header = velodyne_header_;
 
@@ -489,6 +488,9 @@ void EuclideanClusterDetector::rawPointCloudCallback(
                          velodyne_header_);
 
     using_sensor_cloud_ = false;
+    end_ = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end_ - start_;
+    ROS_INFO("Elapsed time: %f seconds", elapsed_seconds.count());
   }
 }
 
