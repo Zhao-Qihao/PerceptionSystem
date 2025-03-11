@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>autoware_lidar_centerpoint</name>
+  <name>lidar_centerpoint</name>
   <version>0.38.0</version>
-  <description>The autoware_lidar_centerpoint package</description>
+  <description>The lidar_centerpoint package</description>
   <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos-Tsunekawa</maintainer>
   <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
   <license>Apache License 2.0</license>

@@ -19,7 +19,7 @@
     
     <group unless="$(arg use_single_frame)">
         <!-- 当 use_single_frame 为 false 时，需要在终端播放rosbag -->
-        <include file="$(find autoware_lidar_centerpoint)/launch/lidar_centerpoint.launch">
+        <include file="$(find lidar_centerpoint)/launch/lidar_centerpoint.launch">
             <arg name="input/pointcloud" value="/rslidar_points"/>
         </include>
         <!-- <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">

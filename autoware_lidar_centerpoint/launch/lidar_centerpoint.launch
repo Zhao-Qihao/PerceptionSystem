@@ -4,10 +4,10 @@
   <arg name="output/objects" default="/detection/lidar_centerpoint/objects"/>
   <arg name="data_path" default="$(env HOME)/autoware_data"/>  <!--description="packages data and artifacts directory path"-->
   <arg name="model_name" default="centerpoint"/> <!--description="options: `centerpoint` or `centerpoint_tiny`"-->
-  <arg name="model_path" default="$(find autoware_lidar_centerpoint)/model"/>
-  <arg name="model_param_path" default="$(find autoware_lidar_centerpoint)/config/$(arg model_name).param.yaml"/>
-  <arg name="ml_package_param_path" default="$(find autoware_lidar_centerpoint)/config/$(arg model_name)_ml_package.param.yaml"/>
-  <arg name="class_remapper_param_path" default="$(find autoware_lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
+  <arg name="model_path" default="$(find lidar_centerpoint)/model"/>
+  <arg name="model_param_path" default="$(find lidar_centerpoint)/config/$(arg model_name).param.yaml"/>
+  <arg name="ml_package_param_path" default="$(find lidar_centerpoint)/config/$(arg model_name)_ml_package.param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(find lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
   <arg name="build_only" default="false"/> <!--description="shutdown node after TensorRT engine file is built"-->
   <arg name="encoder_onnx_path" default="$(arg model_path)/pts_voxel_encoder_$(arg model_name).onnx"/>
   <arg name="encoder_engine_path" default="$(arg model_path)/pts_voxel_encoder_$(arg model_name).engine"/>
@@ -20,7 +20,7 @@
 
   <group if="$(arg use_pointcloud_container)">
     <load_composable_node target="$(arg pointcloud_container_name)">
-      <composable_node pkg="autoware_lidar_centerpoint" plugin="autoware::lidar_centerpoint::LidarCenterPointNode" name="lidar_centerpoint">
+      <composable_node pkg="lidar_centerpoint" plugin="autoware::lidar_centerpoint::LidarCenterPointNode" name="lidar_centerpoint">
         <remap from="~/input/pointcloud" to="$(arg input/pointcloud)"/>
         <remap from="~/output/objects" to="$(arg output/objects)"/>
         <param from="$(arg model_param_path)" allow_substs="true"/>
@@ -33,7 +33,7 @@
     </load_composable_node>
   </group>
   <group unless="$(arg use_pointcloud_container)">
-    <node pkg="autoware_lidar_centerpoint" type="autoware_lidar_centerpoint_node" name="lidar_centerpoint" output="log">
+    <node pkg="lidar_centerpoint" type="lidar_centerpoint_node" name="lidar_centerpoint" output="log">
       <remap from="input/pointcloud" to="$(arg input/pointcloud)"/>
       <remap from="output/objects" to="$(arg output/objects)"/>
       <!-- 加载YAML文件中的参数 -->

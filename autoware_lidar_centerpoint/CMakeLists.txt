@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(autoware_lidar_centerpoint)
+project(lidar_centerpoint)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
