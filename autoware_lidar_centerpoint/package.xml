@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>autoware_lidar_centerpoint</name>
+  <version>0.38.0</version>
+  <description>The autoware_lidar_centerpoint package</description>
+  <maintainer email="kenzo.lobos@tier4.jp">Kenzo Lobos-Tsunekawa</maintainer>
+  <maintainer email="koji.minoda@tier4.jp">Koji Minoda</maintainer>
+  <license>Apache License 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>tf_conversions</build_depend>
+
+  <build_export_depend>roscpp</build_export_depend>
+
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>pcl_ros</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>tf</exec_depend>
+  <exec_depend>tf_conversions</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>rosunit</test_depend>
+</package>

@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="input/pointcloud" default="/rslidar_points"/>
+  <arg name="output/objects" default="/lidar_centerpoint/objects"/>
+  <arg name="data_path" default="$(env HOME)/autoware_data"/>  <!--description="packages data and artifacts directory path"-->
+  <arg name="model_name" default="centerpoint"/> <!--description="options: `centerpoint` or `centerpoint_tiny`"-->
+  <arg name="model_path" default="$(find autoware_lidar_centerpoint)/model"/>
+  <arg name="model_param_path" default="$(find autoware_lidar_centerpoint)/config/$(arg model_name).param.yaml"/>
+  <arg name="ml_package_param_path" default="$(find autoware_lidar_centerpoint)/config/$(arg model_name)_ml_package.param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(find autoware_lidar_centerpoint)/config/detection_class_remapper.param.yaml"/>
+  <arg name="build_only" default="false"/> <!--description="shutdown node after TensorRT engine file is built"-->
+  <arg name="encoder_onnx_path" default="$(arg model_path)/pts_voxel_encoder_$(arg model_name).onnx"/>
+  <arg name="encoder_engine_path" default="$(arg model_path)/pts_voxel_encoder_$(arg model_name).engine"/>
+  <arg name="head_onnx_path" default="$(arg model_path)/pts_backbone_neck_head_$(arg model_name).onnx"/>
+  <arg name="head_engine_path" default="$(arg model_path)/pts_backbone_neck_head_$(arg model_name).engine"/>
+
+
+  <arg name="use_pointcloud_container" default="false"/>  <!--description="use pointcloud_container"-->
+  <arg name="pointcloud_container_name" default="pointcloud_container"/> <!-- description="pointcloud_container name"-->
+
+  <group if="$(arg use_pointcloud_container)">
+    <load_composable_node target="$(arg pointcloud_container_name)">
+      <composable_node pkg="autoware_lidar_centerpoint" plugin="autoware::lidar_centerpoint::LidarCenterPointNode" name="lidar_centerpoint">
+        <remap from="~/input/pointcloud" to="$(arg input/pointcloud)"/>
+        <remap from="~/output/objects" to="$(arg output/objects)"/>
+        <param from="$(arg model_param_path)" allow_substs="true"/>
+        <param from="$(arg ml_package_param_path)" allow_substs="true"/>
+        <param from="$(arg class_remapper_param_path)"/>
+
+        <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
+        <param name="build_only" value="$(arg build_only)"/>
+      </composable_node>
+    </load_composable_node>
+  </group>
+  <group unless="$(arg use_pointcloud_container)">
+    <node pkg="autoware_lidar_centerpoint" type="autoware_lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
+      <remap from="input/pointcloud" to="$(arg input/pointcloud)"/>
+      <remap from="output/objects" to="$(arg output/objects)"/>
+      <!-- 加载YAML文件中的参数 -->
+      <rosparam command="load" file="$(arg model_param_path)" />
+      <rosparam command="load" file="$(arg ml_package_param_path)" />
+      <rosparam command="load" file="$(arg class_remapper_param_path)" />
+      
+      <!-- This parameter shall NOT be included in param file. See also: https://github.com/autowarefoundation/autoware.universe/pull/6167 -->
+      <param name="build_only" value="$(arg build_only)"/>
+      <param name="encoder_onnx_path" value="$(arg encoder_onnx_path)"/>
+      <param name="encoder_engine_path" value="$(arg encoder_engine_path)"/>
+      <param name="head_onnx_path" value="$(arg head_onnx_path)"/>
+      <param name="head_engine_path" value="$(arg head_engine_path)"/>
+    </node>
+  </group>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+        output="screen" ns="/lidar_centerpoint">
+    <param name="objects_src_topic" value="/objects"/>
+  </node>
+</launch>
