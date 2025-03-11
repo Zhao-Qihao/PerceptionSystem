@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_object_fusion)
 
-find_package(autoware_build_flags REQUIRED)
-
 find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   cv_bridge

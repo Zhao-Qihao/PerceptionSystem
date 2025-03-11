@@ -3,7 +3,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(detected_objects_visualizer)
 
-#find_package(autoware_build_flags REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   autoware_msgs
   cv_bridge
