@@ -26,12 +26,12 @@ class ImagePublisher:
         
         # 加载六张图片
         self.images = [
-            cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_FRONT.jpg")
-            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_FRONT_LEFT.jpg")
-            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_FRONT_RIGHT.jpg")
-            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_BACK.jpg")
-            ,cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_BACK_LEFT.jpg")
-            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/2_BACK_RIGHT.jpg")
+            cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_FRONT.jpg")
+            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_FRONT_LEFT.jpg")
+            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_FRONT_RIGHT.jpg")
+            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_BACK.jpg")
+            ,cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_BACK_LEFT.jpg")
+            , cv2.imread("/home/itachi/project/catkin_ws_test/src/pcd_publisher/scripts/CAM_BACK_RIGHT.jpg")
         ]
         
         # 检查图片是否加载成功
@@ -46,8 +46,8 @@ class ImagePublisher:
     def publish_images(self):
         while not rospy.is_shutdown():
             for i, img in enumerate(self.images):
-                if i != 0:
-                    img = np.zeros_like(img)
+                # if i != 0:
+                #     img = np.zeros_like(img)
                 # 将OpenCV图像转换为ROS图像消息
                 ros_image = self.bridge.cv2_to_imgmsg(img, "bgr8")
                 ros_image.header.stamp = rospy.Time.now()
