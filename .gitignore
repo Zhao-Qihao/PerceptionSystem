@@ -5,7 +5,7 @@ range_vision_fusion
 center_point/model
 BEVFusion-ROS-TensorRT/model
 .vscode
-autoware_lidar_centerpoint/model
+idar_centerpoint/model
 lidar_shape_estimation
 obstacle_pointcloud_validator
 
