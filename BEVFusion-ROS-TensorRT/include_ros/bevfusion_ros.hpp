@@ -14,6 +14,8 @@
 #include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
+#include "autoware_msgs/DetectedObjectArray.h"
+#include "autoware_msgs/DetectedObject.h"
 
 // 点云
 #include <pcl/io/pcd_io.h>
@@ -28,10 +30,23 @@ class RosNode
   std::string model_name_, precision_;
   ros::NodeHandle n_;
   ros::Publisher pub_img_;
+  ros::Publisher pub_obj_;
 
   std::string topic_cloud_;
   std::string topic_img_f_, topic_img_fl_, topic_img_fr_;
   std::string topic_img_b_, topic_img_bl_, topic_img_br_;
+
+    // 预分配的固定大小内存缓冲区（假设每张图像尺寸为 1920x1080x3 字节）
+    std::vector<unsigned char> front_buffer;          // 前向摄像头
+    std::vector<unsigned char> front_left_buffer;     // 前左
+    std::vector<unsigned char> front_right_buffer;    // 前右
+    std::vector<unsigned char> back_buffer;           // 后向
+    std::vector<unsigned char> back_left_buffer;      // 后左
+    std::vector<unsigned char> back_right_buffer;     // 后右
+
+    // 存储图像数据的列表（复用缓冲区）
+    std::vector<std::vector<unsigned char>> images_;  // 预分配容量为6
+    size_t image_size;   // 图像尺寸,若不同camera的图像尺寸不同，则需要定义多个
 
 
   message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_; 
@@ -64,6 +79,7 @@ class RosNode
     const sensor_msgs::ImageConstPtr& msg_b_img,
     const sensor_msgs::ImageConstPtr& msg_bl_img,
     const sensor_msgs::ImageConstPtr& msg_br_img);
+  void pubDetected(std::vector<bevfusion::head::transbbox::BoundingBox>& boxes, const sensor_msgs::PointCloud2ConstPtr& msg_cloud);
 };
 
 #endif

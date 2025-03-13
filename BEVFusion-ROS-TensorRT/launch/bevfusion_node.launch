@@ -17,6 +17,10 @@
     <node pkg="bevfusion" name="bevfusion_node" type="bevfusion_node" output="screen" />
     
     <!-- rviz -->
-    <node pkg="rviz" name ="rviz_bevfusion_node" type="rviz"
-        respawn="false" output="screen" args="-d $(find bevfusion)/launch/1.rviz"/>
+    <!-- <node pkg="rviz" name ="rviz_bevfusion_node" type="rviz"
+        respawn="false" output="screen" args="-d $(find bevfusion)/launch/1.rviz"/> -->
+    <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+            output="screen" ns="/detection/bevfusion">
+        <param name="objects_src_topic" value="/objects"/>
+    </node>
 </launch>

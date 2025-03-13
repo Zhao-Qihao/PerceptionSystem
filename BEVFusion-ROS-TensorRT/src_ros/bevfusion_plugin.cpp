@@ -1,4 +1,5 @@
 #include "bevfusion_plugin.hpp"
+#include "ros/ros.h"
 
 // 打印4*4的参数
 void printParam(float *parm, int const begin, int const end)
@@ -186,6 +187,8 @@ std::shared_ptr<bevfusion::Core> create_core(const std::string& model, const std
 BEVFusionNode::BEVFusionNode(const std::string& model_name, const std::string& precision)
   : model_name_(model_name), precision_(precision)
 { 
+  ros::Time start = ros::Time::now();
+
   config_path = pkg_path + "/configs";
 
   cloud_.reset(new pcl::PointCloud<PointT>());
@@ -225,11 +228,11 @@ BEVFusionNode::BEVFusionNode(const std::string& model_name, const std::string& p
 
   core->update( cam2lidar, cam_intrinsics, lidar2img, img_aug_mat, stream);
   core->free_excess_memory();  // 可以注释掉这句
-
+  std::cout << "Initialize time:" << (ros::Time::now() - start).toSec() << "s "<< std::endl;
 }
 
 
-void BEVFusionNode::Inference(const std::vector<unsigned char *>& images_data, float *lidar_arr, int lidar_num)
+std::vector<bevfusion::head::transbbox::BoundingBox> BEVFusionNode::Inference(const std::vector<std::vector<unsigned char> > images_data, float *lidar_arr, int lidar_num)
 { 
   
   std::vector<int64_t> lidar_shape{lidar_num, 5};
@@ -243,7 +246,9 @@ void BEVFusionNode::Inference(const std::vector<unsigned char *>& images_data, f
   auto bboxes =
     core->forward((const unsigned char**)images_data.data(), lidar_half.ptr<nvtype::half>(), lidar_data.size(0), stream);
   
-  visualize(bboxes, lidar_half, images_data, lidar2image, "cuda-bevfusion.jpg", stream);
+  // visualize(bboxes, lidar_half, images_data, lidar2image, "cuda-bevfusion.jpg", stream);
+
+  return bboxes;
 }
 
 void BEVFusionNode::visualize(const std::vector<bevfusion::head::transbbox::BoundingBox>& bboxes, const nv::Tensor& lidar_points,
@@ -252,6 +257,7 @@ void BEVFusionNode::visualize(const std::vector<bevfusion::head::transbbox::Boun
                       {
   std::vector<nv::Prediction> predictions(bboxes.size());
   memcpy(predictions.data(), bboxes.data(), bboxes.size() * sizeof(nv::Prediction));
+  ros::Time start = ros::Time::now();
 
   int padding = 300;
   int lidar_size = 1024;
@@ -329,6 +335,9 @@ void BEVFusionNode::visualize(const std::vector<bevfusion::head::transbbox::Boun
     checkRuntime(cudaStreamSynchronize(stream));
   }
 
+  ros::Time end = ros::Time::now();
+  std::cout << "Visualize time: " << (end - start).toSec() * 1000 << " ms" << std::endl;
+  // printf("Visualize time: %.3f ms\n", (end - start).toSec() * 1000);
   // 保存图像
   // printf("Save to %s\n", (pkg_path + "/configs/" + save_path).c_str());
   stbi_write_jpg((pkg_path + "/configs/" + save_path).c_str(), scene_device_image.size(1), scene_device_image.size(0), 3,

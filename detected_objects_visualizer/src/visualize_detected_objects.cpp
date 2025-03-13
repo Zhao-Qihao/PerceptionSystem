@@ -641,7 +641,7 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
 
 bool VisualizeDetectedObjects::IsObjectValid(const autoware_msgs::DetectedObject &in_object)
 {
-  if (!in_object.valid ||
+  if (
       std::isnan(in_object.pose.orientation.x) ||
       std::isnan(in_object.pose.orientation.y) ||
       std::isnan(in_object.pose.orientation.z) ||

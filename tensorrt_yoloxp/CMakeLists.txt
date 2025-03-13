@@ -7,7 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  OpenCV
+  # OpenCV
   cv_bridge
   image_transport
 )

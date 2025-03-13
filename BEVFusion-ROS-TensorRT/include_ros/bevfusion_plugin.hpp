@@ -59,7 +59,7 @@ std::vector<unsigned char*> load_images(
 void free_images(std::vector<unsigned char*>& images);
 
 void visualize(const std::vector<bevfusion::head::transbbox::BoundingBox>& bboxes, const nv::Tensor& lidar_points,
-                      const std::vector<unsigned char*> images, const nv::Tensor& lidar2image, const std::string& save_path,
+                      const std::vector<std::vector<unsigned char>> images, const nv::Tensor& lidar2image, const std::string& save_path,
                       cudaStream_t stream);
 
 std::shared_ptr<bevfusion::Core> create_core(const std::string& model, const std::string& precision);
@@ -100,7 +100,7 @@ class BEVFusionNode
 	
 	// 推理
 	// void Inference(const std::vector<unsigned char *>& images_data, const pcl::PointCloud<PointT>::Ptr &cloud);
-	void Inference(const std::vector<unsigned char *>& images_data, float *lidar_arr, int lidar_num);
+	std::vector<bevfusion::head::transbbox::BoundingBox> Inference(const std::vector<std::vector<unsigned char> > images_data, float *lidar_arr, int lidar_num);
 	
 
 	// 可视化
