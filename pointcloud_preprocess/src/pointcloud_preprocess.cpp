@@ -1,10 +1,10 @@
 #include "pointcloud_preprocess.h"
 
 // 定义车辆边界参数
-const double CAR_LENGTH = 11.45;  // 车辆长度
-const double CAR_WIDTH = 2.934;   // 车辆宽度
-const double CAR_X_OFFSET = -5.725; // 车辆在点云坐标系中的X轴偏移
-const double CAR_Y_OFFSET = 0.0; // 车辆在点云坐标系中的Y轴偏移
+const double CAR_LEFT = 0.6;  // 车辆长度
+const double CAR_RIGHT = -0.7;   // 车辆宽度
+const double CAR_FRONT = 0.3; // 车辆中心点在点云坐标系中的X轴偏移
+const double CAR_BACK = -2.45; // 车辆中心点在点云坐标系中的Y轴偏移
 
 PointCloudPreprocessNode::PointCloudPreprocessNode()
     : nh_("~")
@@ -28,15 +28,13 @@ PointCloudPreprocessNode::~PointCloudPreprocessNode()
 bool PointCloudPreprocessNode::isPointInCar(const pcl::PointXYZI& point)
 {
     // 检查点是否在车辆边界内
-    double x = point.x - CAR_X_OFFSET;
-    double y = point.y - CAR_Y_OFFSET;
-
-    return (x >= -CAR_LENGTH / 2.0 && x <= CAR_LENGTH / 2.0 &&
-            y >= -CAR_WIDTH / 2.0 && y <= CAR_WIDTH / 2.0);
+    return (point.x <= CAR_FRONT  &&  point.x >= CAR_BACK  &&
+            point.y <= CAR_LEFT  &&  point.y >= CAR_RIGHT);
 }
 
 void PointCloudPreprocessNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
-{
+{   
+    ros::Time start = ros::Time::now();
     // 将 ROS 点云消息转换为 PCL 点云
     pcl::PointCloud<pcl::PointXYZI> cloud;
     pcl::fromROSMsg(*cloud_msg, cloud);
@@ -67,6 +65,7 @@ void PointCloudPreprocessNode::cloudCallback(const sensor_msgs::PointCloud2Const
 
     // 发布过滤后的点云
     point_cloud_pub_.publish(output);
+    ROS_INFO("PointCloud Preprocess Time: %f ms", (ros::Time::now() - start).toSec()*1000);
 }
 
 int main(int argc, char** argv) {

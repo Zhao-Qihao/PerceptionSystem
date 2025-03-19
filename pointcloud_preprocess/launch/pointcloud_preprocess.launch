@@ -1,6 +1,6 @@
 <launch>
-    <arg name="clip_min_height" default="-4" />
-    <arg name="clip_max_height" default="0.5" />
+    <arg name="clip_min_height" default="-2" />
+    <arg name="clip_max_height" default="3" />
     <arg name="input_topic" default="/cloud_concatenated" />
     <arg name="output_topic" default="/cloud_preprocessed" />
     <arg name="remove_self_point" default="true" />
