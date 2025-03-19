@@ -25,6 +25,7 @@ PointCloudPreprocessNode::~PointCloudPreprocessNode()
 {
 }
 
+// TODO: 这里点云通过一个点一个点进行处理，效率较低，后续可以优化
 bool PointCloudPreprocessNode::isPointInCar(const pcl::PointXYZI& point)
 {
     // 检查点是否在车辆边界内
