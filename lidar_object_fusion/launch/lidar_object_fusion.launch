@@ -4,7 +4,7 @@
   <arg name="sync_topics" default="true"/>
   <arg name="distanceThreshold" default="1.3"/>  <!--距离超过1.3米的两个物体就不认为会有是一个物体的可能性-->
   <arg name="overlap_threshold" default="0.5"/>  <!--TODO: 两个物体重叠超过0.5的就认为两个物体是一个物体-->
-  <arg name="namespace" default="/detection/fusion_tools"/>
+  <arg name="namespace" default="/detection/3D_objects_fusion"/>
   <arg name="viz" default="false"/>
 
   <node name="lidar_object_fusion" pkg="lidar_object_fusion" type="lidar_object_fusion" output="screen">

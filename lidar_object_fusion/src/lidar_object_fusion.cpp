@@ -174,7 +174,7 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
   //get params
   std::string detected_objects_vision;
-  std::string detected_objects_range, fused_topic_str = "/detection/fusion_tools/objects";
+  std::string detected_objects_range, fused_topic_str = "/detection/3D_objects_fusion/objects";
   std::string name_space_str = ros::this_node::getNamespace();
   bool sync_topics = true;
 
@@ -186,7 +186,7 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
   ROS_INFO("[%s] detected_objects_range: %s", __APP_NAME__, detected_objects_range.c_str());
 
   in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision,
-                                       "/casper_auto/detection/lidar_detector/objects");
+                                       "/detection/image_detector/objects");
   ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
 
   in_private_handle.param<double>("distanceThreshold", distanceThreshold_, 1.2);
