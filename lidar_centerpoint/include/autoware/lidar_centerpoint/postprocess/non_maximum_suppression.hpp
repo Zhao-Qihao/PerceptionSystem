@@ -15,7 +15,7 @@
 #ifndef AUTOWARE__LIDAR_CENTERPOINT__POSTPROCESS__NON_MAXIMUM_SUPPRESSION_HPP_
 #define AUTOWARE__LIDAR_CENTERPOINT__POSTPROCESS__NON_MAXIMUM_SUPPRESSION_HPP_
 
-#include "autoware/lidar_centerpoint/ros_utils.hpp"
+// #include "autoware/lidar_centerpoint/ros_utils.hpp"
 
 #include <Eigen/Eigen>
 

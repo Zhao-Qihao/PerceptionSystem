@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="input/pointcloud" default="/rslidar_points"/>
+  <arg name="input/pointcloud" default="/lidar_top"/>
   <arg name="output/objects" default="/detection/lidar_centerpoint/objects"/>
   <arg name="data_path" default="$(env HOME)/autoware_data"/>  <!--description="packages data and artifacts directory path"-->
   <arg name="model_name" default="centerpoint"/> <!--description="options: `centerpoint` or `centerpoint_tiny`"-->
@@ -33,7 +33,7 @@
     </load_composable_node>
   </group>
   <group unless="$(arg use_pointcloud_container)">
-    <node pkg="lidar_centerpoint" type="lidar_centerpoint_node" name="lidar_centerpoint" output="log">
+    <node pkg="lidar_centerpoint" type="lidar_centerpoint_node" name="lidar_centerpoint" output="screen">
       <remap from="input/pointcloud" to="$(arg input/pointcloud)"/>
       <remap from="output/objects" to="$(arg output/objects)"/>
       <!-- 加载YAML文件中的参数 -->

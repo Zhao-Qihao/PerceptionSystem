@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
-  <!-- <arg name="points_node" default="/kitti/velo/pointcloud" />CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW -->
-  <arg name="points_node" default="/rslidar_points" />
+  <arg name="points_node" default="/kitti/velo/pointcloud" />CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW
+  <!-- <arg name="points_node" default="/lidar_top" /> -->
   <arg name="remove_ground" default="true" />
   <arg name="downsample_cloud" default="true" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
   <arg name="leaf_size" default="0.15" /><!-- Voxel Grid Filter leaf size-->
@@ -13,7 +13,7 @@
   <arg name="clip_min_height" default="-3.5" />
   <arg name="clip_max_height" default="1.0" />
 
-  <arg name="keep_lanes" default="true" />
+  <arg name="keep_lanes" default="false" />
   <arg name="keep_lane_left_distance" default="9" />
   <arg name="keep_lane_right_distance" default="4.5" />
   <arg name="remove_behind_lane" default="false" />
@@ -23,7 +23,7 @@
 
   <arg name="wayarea_gridmap_layer" default="wayarea" />
 
-  <arg name="output_frame" default="rslidar" />
+  <arg name="output_frame" default="velo_link" />
 
   <arg name="remove_points_upto" default="0" />
 
@@ -37,7 +37,7 @@
   <arg name="enable_visualizer" default="true"/>
 
   <node pkg="lidar_euclidean_cluster_detect" type="lidar_euclidean_cluster_detect"
-        name="lidar_euclidean_cluster_detect" output="log">
+        name="lidar_euclidean_cluster_detect" output="screen">
     <param name="points_node"
            value="$(arg points_node)"/> <!-- Can be used to select which pointcloud node will be used as input for the clustering -->
     <param name="remove_ground" value="$(arg remove_ground)"/>

@@ -9,9 +9,79 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 namespace autoware::lidar_centerpoint
 {
+// 计算两个 DetectedObject 在 BEV 平面上的 IoU
+float calculate_bev_iou(const autoware_msgs::DetectedObject& obj1, const autoware_msgs::DetectedObject& obj2) {
+  // BEV平面的矩形表示为 [x_min, y_min, x_max, y_max]
+  float obj1_x_min = obj1.pose.position.x - obj1.dimensions.x / 2.0f;
+  float obj1_y_min = obj1.pose.position.y - obj1.dimensions.y / 2.0f;
+  float obj1_x_max = obj1.pose.position.x + obj1.dimensions.x / 2.0f;
+  float obj1_y_max = obj1.pose.position.y + obj1.dimensions.y / 2.0f;
+
+  float obj2_x_min = obj2.pose.position.x - obj2.dimensions.x / 2.0f;
+  float obj2_y_min = obj2.pose.position.y - obj2.dimensions.y / 2.0f;
+  float obj2_x_max = obj2.pose.position.x + obj2.dimensions.x / 2.0f;
+  float obj2_y_max = obj2.pose.position.y + obj2.dimensions.y / 2.0f;
+
+  // 计算交集区域
+  float inter_x_min = std::max(obj1_x_min, obj2_x_min);
+  float inter_y_min = std::max(obj1_y_min, obj2_y_min);
+  float inter_x_max = std::min(obj1_x_max, obj2_x_max);
+  float inter_y_max = std::min(obj1_y_max, obj2_y_max);
+
+  float inter_area = std::max(0.0f, inter_x_max - inter_x_min) * std::max(0.0f, inter_y_max - inter_y_min);
+
+  // 计算并集区域
+  float obj1_area = obj1.dimensions.x * obj1.dimensions.y;
+  float obj2_area = obj2.dimensions.x * obj2.dimensions.y;
+  float union_area = obj1_area + obj2_area - inter_area;
+
+  // 防止除零错误
+  if (union_area <= 0.0f) return 0.0f;
+
+  return inter_area / union_area;
+}
+
+// BEV NMS实现
+std::vector<autoware_msgs::DetectedObject> bev_nms(
+  const std::vector<autoware_msgs::DetectedObject>& objects, float iou_threshold) {
+  std::vector<autoware_msgs::DetectedObject> result;
+  std::vector<std::pair<float, int>> score_index_pairs;
+
+  // 按照置信度分数排序
+  for (size_t i = 0; i < objects.size(); ++i) {
+      score_index_pairs.emplace_back(std::make_pair(objects[i].score, i));
+  }
+  std::sort(score_index_pairs.begin(), score_index_pairs.end(),
+            [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
+                return a.first > b.first;
+            });
+
+  std::vector<bool> removed(objects.size(), false);
+
+  for (size_t i = 0; i < score_index_pairs.size(); ++i) {
+      if (removed[score_index_pairs[i].second]) continue;
+
+      result.push_back(objects[score_index_pairs[i].second]);
+
+      for (size_t j = i + 1; j < score_index_pairs.size(); ++j) {
+          if (removed[score_index_pairs[j].second]) continue;
+
+          float iou = calculate_bev_iou(
+              objects[score_index_pairs[i].second],
+              objects[score_index_pairs[j].second]);
+
+          if (iou > iou_threshold) {
+              removed[score_index_pairs[j].second] = true;
+          }
+      }
+  }
+
+  return result;
+}
 
 LidarCenterPointNode::LidarCenterPointNode(ros::NodeHandle nh, ros::NodeHandle private_nh)
   : tf_buffer_(), tf_listener_(tf_buffer_)
@@ -109,7 +179,10 @@ void LidarCenterPointNode::pointCloudCallback(const sensor_msgs::PointCloud2::Co
 
     raw_objects.emplace_back(object);
   }
-
+  // apply BEV NMS
+  float nms_iou_threshold = 0.55;  // 设置IoU阈值
+  std::vector<autoware_msgs::DetectedObject> filtered_objects = bev_nms(raw_objects, nms_iou_threshold);
+  
   autoware_msgs::DetectedObjectArray output_msg;
   output_msg.header = input_pointcloud_msg->header;
   output_msg.objects = raw_objects;
