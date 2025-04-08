@@ -10,4 +10,4 @@ post_process_params:
   yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
 densification_params:
   world_frame_id: rslidar
-  num_past_frames: 1
+  num_past_frames: 10
