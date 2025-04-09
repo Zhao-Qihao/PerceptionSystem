@@ -605,7 +605,7 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 {
   //get params
   std::string camera_info_src, detected_objects_vision, min_car_dimensions, min_person_dimensions, min_truck_dimensions;
-  std::string detected_objects_range, fused_topic_str = "/detection/fusion_tools/objects";
+  std::string detected_objects_range, image_sub, projected_image, fused_topic_str = "/detection/fusion_tools/objects";
   std::string name_space_str = ros::this_node::getNamespace();
   bool sync_topics = false;
 
@@ -619,6 +619,15 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
   in_private_handle.param<std::string>("detected_objects_vision", detected_objects_vision,
                                        "/detection/image_detector/objects");
   ROS_INFO("[%s] detected_objects_vision: %s", __APP_NAME__, detected_objects_vision.c_str());
+
+  in_private_handle.param<std::string>("image_sub", image_sub,
+                                       "/kitti/camera_color_left/image_raw");
+  ROS_INFO("[%s] image_sub: %s", __APP_NAME__, image_sub.c_str());
+
+  in_private_handle.param<std::string>("projected_image", projected_image,
+                                       "/detection/fusion_tools/image_projected");
+  ROS_INFO("[%s] projected_image: %s", __APP_NAME__, projected_image.c_str());
+  
 
   in_private_handle.param<std::string>("camera_info_src", camera_info_src, "/camera_info");
   ROS_INFO("[%s] camera_info_src: %s", __APP_NAME__, camera_info_src.c_str());
@@ -709,7 +718,7 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
                                                                                                    detected_objects_range,
                                                                                                    1);
     image_subscriber_ = new message_filters::Subscriber<sensor_msgs::Image>(node_handle_,
-                                                                            "/kitti/camera_color_left/image_raw",
+                                                                            image_sub,
                                                                             1);
     detections_synchronizer_ =
       new message_filters::Synchronizer<SyncPolicyT>(SyncPolicyT(10),
@@ -724,7 +733,7 @@ ROSRangeVisionFusionApp::InitializeROSIo(ros::NodeHandle &in_private_handle)
 
   ROS_INFO("[%s] Publishing fused objects in %s", __APP_NAME__, fused_topic_str.c_str());
 
-  pub_image_ = node_handle_.advertise<sensor_msgs::Image>("/kitti/camera_color_left/image_projected", 1);
+  pub_image_ = node_handle_.advertise<sensor_msgs::Image>(projected_image, 1);
 
   publisher_range_in_cv_ = node_handle_.advertise<autoware_msgs::DetectedObjectArray>(
       "/detection/fusion_tools/range_in_cv", 10); // 设置话题名称和缓冲区大小

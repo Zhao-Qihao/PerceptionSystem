@@ -1,10 +1,10 @@
 <!-- -->
 <launch>
-  <arg name="points_node" default="/kitti/velo/pointcloud" />CHANGE THIS TO READ WHETHER FROM VSCAN OR POINTS_RAW
-  <!-- <arg name="points_node" default="/lidar_top" /> -->
+  <!-- <arg name="points_node" default="/kitti/velo/pointcloud" /> -->
+  <arg name="points_node" default="/lidar_top" />
   <arg name="remove_ground" default="true" />
-  <arg name="downsample_cloud" default="true" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
-  <arg name="leaf_size" default="0.15" /><!-- Voxel Grid Filter leaf size-->
+  <arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
+  <arg name="leaf_size" default="0.10" /><!-- Voxel Grid Filter leaf size-->
   <arg name="cluster_size_min" default="20" /><!-- Minimum number of points to consider a cluster as valid, defualt 20 -->
   <arg name="cluster_size_max" default="100000" /><!-- Maximum number of points to allow inside a cluster, default 100000 -->
   <arg name="sync" default="false" />
@@ -23,13 +23,13 @@
 
   <arg name="wayarea_gridmap_layer" default="wayarea" />
 
-  <arg name="output_frame" default="velo_link" />
+  <arg name="output_frame" default="lidar_top" />
 
   <arg name="remove_points_upto" default="0" />
 
   <arg name="use_gpu" default="true" />
 
-  <arg name="use_multiple_thres" default="true"/>
+  <arg name="use_multiple_thres" default="false"/>
   <arg name="clustering_ranges" default="[15,30,45,60]"/><!-- Distances to segment pointcloud -->
   <arg name="clustering_distances"
        default="[0.5,1.1,1.6,2.1,2.6]"/><!-- Euclidean Clustering threshold distance for each segment -->
