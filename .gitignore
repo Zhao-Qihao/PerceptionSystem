@@ -9,4 +9,4 @@ lidar_shape_estimation
 obstacle_pointcloud_validator
 # autoware_lidar_bevfusion
 *.launch
-autoware_lidar_bevfusion/config/bevfusion_camera_lidar_v2.onnx
+autoware_lidar_bevfusion/models

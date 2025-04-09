@@ -4,7 +4,8 @@ project(autoware_lidar_bevfusion)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
+enable_language(CUDA)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 # Find catkin and other dependencies
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -14,13 +15,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 find_package(PCL REQUIRED COMPONENTS common io)
-# find_package(autoware_tensorrt_common REQUIRED)
+add_definitions(-DTV_CUDA)  # 启用 TensorView 的 CUDA 支持
 
 # Set CUDA-related options
 option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
 option(CUDA_AVAIL "CUDA available" OFF)
 
 # Check for CUDA availability
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12.3")
 find_package(CUDA)
 if(CUDA_FOUND)
   find_library(CUBLAS_LIBRARIES cublas HINTS
@@ -93,7 +95,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
   # Declare catkin package
   catkin_package(
     INCLUDE_DIRS include
-    LIBRARIES ${PROJECT_NAME}_lib
+    LIBRARIES ${PROJECT_NAME}_lib ${PROJECT_NAME}_cuda_lib
     CATKIN_DEPENDS roscpp sensor_msgs
   )
 
@@ -122,7 +124,12 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
   find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
   # Add CUDA NVCC flags
-  list(APPEND CUDA_NVCC_FLAGS "--expt-relaxed-constexpr -diag-suppress 1675 --extended-lambda")
+  list(APPEND CUDA_NVCC_FLAGS
+  "-gencode=arch=compute_89,code=sm_89"  # 添加对 SM 89 的支持
+  "--expt-relaxed-constexpr"              # 原有标志保留
+  "-diag-suppress 1675"
+  "--extended-lambda"
+  )
 
   # CUDA libraries
   cuda_add_library(bev_ops SHARED
@@ -150,7 +157,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
   )
 
   target_link_libraries(${PROJECT_NAME}_cuda_lib spconv::spconv)
-  target_include_directories(${PROJECT_NAME}_cuda_lib SYSTEM PUBLIC ${autoware_cuda_utils_INCLUDE_DIRS})
+  # target_include_directories(${PROJECT_NAME}_cuda_lib SYSTEM PUBLIC ${autoware_cuda_utils_INCLUDE_DIRS})
 
   add_library(${PROJECT_NAME}_lib SHARED
     # lib/detection_class_remapper.cpp
@@ -169,11 +176,13 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
   target_link_libraries(${PROJECT_NAME}_lib
     ${NVINFER}
     ${NVINFER_PLUGIN}
+    /usr/local/TensorRT-10.7.0.23/lib/libnvonnxparser.so
     ${NVONNXPARSER}
     ${CUDA_LIBRARIES}
     ${CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
+    /usr/local/cuda-12.3/targets/x86_64-linux/lib/libnvrtc.so
     ${PROJECT_NAME}_cuda_lib
     ${catkin_LIBRARIES}
     stdc++fs
@@ -184,7 +193,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
   
 
   install(TARGETS ${PROJECT_NAME}_cuda_lib
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
@@ -209,7 +218,7 @@ endif()
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}_lib
+  LIBRARIES ${PROJECT_NAME}_lib ${PROJECT_NAME}_cuda_lib
   CATKIN_DEPENDS roscpp sensor_msgs pcl_ros
 )
 
