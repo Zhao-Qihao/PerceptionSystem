@@ -490,7 +490,7 @@ void EuclideanClusterDetector::rawPointCloudCallback(
     using_sensor_cloud_ = false;
     end_ = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end_ - start_;
-    ROS_INFO("Elapsed time: %f seconds", elapsed_seconds.count());
+    ROS_INFO("Euclidean elapsed time: %f ms", elapsed_seconds.count()*1000);
   }
 }
 

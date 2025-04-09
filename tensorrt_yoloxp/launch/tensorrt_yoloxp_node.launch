@@ -3,7 +3,7 @@
   <arg name="onnx_model_path" default="$(find tensorrt_yoloxp)/model/yolox-sPlus-T4-960x960-pseudo-finetune.onnx" />
   <arg name='precision' default='fp32' />
   <arg name='nms_thresh' default='0.7' />
-  <arg name='score_thresh' default='0.2' />
+  <arg name='score_thresh' default='0.3' />
   <arg name='num_class' default='8' />
   <arg name='classname_path' default="$(find tensorrt_yoloxp)/data/t4.names" />
   <arg name='rgbfile_path' default="$(find tensorrt_yoloxp)/data/t4.colormap" />

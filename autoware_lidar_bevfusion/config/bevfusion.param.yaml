@@ -1,5 +1,5 @@
 # modality
-sensor_fusion: true
+sensor_fusion: false
 # non-network params
 max_camera_lidar_delay: 0.12
 # plugins
@@ -8,8 +8,6 @@ plugins_path: "/home/itachi/project/catkin_ws_test/devel/lib/libautoware_tensorr
 # network
 trt_precision: fp16
 cloud_capacity: 2000000
-onnx_path: "$(arg model_path)/bevfusion_camera_lidar_v2.onnx"
-engine_path: "$(arg model_path)/bevfusion_camera_lidar_v2.engine"
 # pre-process params
 densification_num_past_frames: 8
 densification_world_frame_id: lidar_top

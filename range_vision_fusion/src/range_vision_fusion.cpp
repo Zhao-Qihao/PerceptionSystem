@@ -503,6 +503,7 @@ ROSRangeVisionFusionApp::SyncedDetectionsCallback(
   fusion_objects = FuseRangeVisionDetections(in_vision_detections, in_range_detections, image);
 
   publisher_fused_objects_.publish(fusion_objects);
+  ROS_INFO("range vision fusion complete");
   empty_frames_ = 0;
 
   vision_detections_ = nullptr;

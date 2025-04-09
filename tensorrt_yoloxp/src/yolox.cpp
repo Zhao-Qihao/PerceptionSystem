@@ -192,7 +192,6 @@ void YOLOXNode::pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_object
         }
     }
     pub_bboxes_3d_.publish(objects);
-    ROS_INFO("hello");
 }
 
 bool YOLOXNode::filter_dist_objects(autoware_msgs::DetectedObject& object) {
