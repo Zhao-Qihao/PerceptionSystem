@@ -35,12 +35,12 @@ int main(int argc, char **argv) {
 
     ros::Rate loop_rate(10);
 
-    sensor_msgs::CameraInfo camera_info_0 = createCameraInfo(1600, 900, 1266.4172, 1266.4172, 816.2670, 491.5070, "camera0");  // CAM_FRONT
-    sensor_msgs::CameraInfo camera_info_1 = createCameraInfo(1600, 900, 1272.8625, 1272.8625, 826.2411, 479.9155, "camera1");  // CAM_FRONT_LEFT
-    sensor_msgs::CameraInfo camera_info_2 = createCameraInfo(1600, 900, 1260.8474, 1260.8474, 807.7888, 495.9542, "camera2");  // CAM_FRONT_RIGHT
-    sensor_msgs::CameraInfo camera_info_3 = createCameraInfo(1600, 900, 1256.9629, 1256.9629, 792.3768, 492.5482, "camera3");  // CAM_BACK_LEFT
-    sensor_msgs::CameraInfo camera_info_4 = createCameraInfo(1600, 900, 1259.9629, 1259.9629, 807.3768, 501.5482, "camera4");  // CAM_BACK_RIGHT
-    sensor_msgs::CameraInfo camera_info_5 = createCameraInfo(1600, 900, 809.8911, 809.8911, 829.7774, 481.8849, "camera5");    // CAM_BACK
+    sensor_msgs::CameraInfo camera_info_0 = createCameraInfo(1600, 900, 1266.4172, 1266.4172, 816.2670, 491.5070, "cam_front");  // CAM_FRONT
+    sensor_msgs::CameraInfo camera_info_1 = createCameraInfo(1600, 900, 1272.8625, 1272.8625, 826.2411, 479.9155, "cam_front_left");  // CAM_FRONT_LEFT
+    sensor_msgs::CameraInfo camera_info_2 = createCameraInfo(1600, 900, 1260.8474, 1260.8474, 807.7888, 495.9542, "cam_front_right");  // CAM_FRONT_RIGHT
+    sensor_msgs::CameraInfo camera_info_3 = createCameraInfo(1600, 900, 1256.9629, 1256.9629, 792.3768, 492.5482, "cam_back_left");  // CAM_BACK_LEFT
+    sensor_msgs::CameraInfo camera_info_4 = createCameraInfo(1600, 900, 1259.9629, 1259.9629, 807.3768, 501.5482, "cam_back_right");  // CAM_BACK_RIGHT
+    sensor_msgs::CameraInfo camera_info_5 = createCameraInfo(1600, 900, 809.8911, 809.8911, 829.7774, 481.8849, "cam_back");    // CAM_BACK
 
     while (ros::ok()) {
         ros::Time now = ros::Time::now();

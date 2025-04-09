@@ -22,6 +22,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_sensor_msgs/tf2_sensor_msgs.h>
 
 #include <cstddef>
@@ -226,6 +227,7 @@ LidarBEVFusionNode::LidarBEVFusionNode()
 
 void LidarBEVFusionNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& pc_msg)
 {
+  ros::Time start_time = ros::Time::now();
   lidar_frame_ = pc_msg->header.frame_id;
 
   if (sensor_fusion_ && (!extrinsics_available_ || !images_available_ || !intrinsics_available_)) {
@@ -246,6 +248,7 @@ void LidarBEVFusionNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& p
 
     detector_ptr_->setIntrinsicsExtrinsics(camera_info_msgs, lidar2camera_extrinsics);
     intrinsics_extrinsics_precomputed_ = true;
+    ROS_INFO("Intrinsics and extrinsics precomputed.");
   }
 
   double lidar_stamp = pc_msg->header.stamp.toSec();
@@ -256,48 +259,74 @@ void LidarBEVFusionNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& p
         ? 1.0
         : 0.f;
   }
+  std::cout << "================camera_masks_" << camera_masks_ << std::endl;
 
   std::vector<Box3D> det_boxes3d;
   std::unordered_map<std::string, double> proc_timing;
   bool is_success =
     detector_ptr_->detect(pc_msg, image_msgs_, camera_masks_, tf_buffer_, det_boxes3d, proc_timing);
   if (!is_success) {
+    ROS_INFO("Detection failed");
     return;
   }
 
   std::vector<autoware_msgs::DetectedObject> raw_objects;
   raw_objects.reserve(det_boxes3d.size());
+    std::cout << "det_boxes3d.size()=================================: " << det_boxes3d.size() << std::endl; 
   for (const auto & box3d : det_boxes3d) {
-    autoware_msgs::DetectedObject obj;
-    // box3DToDetectedObject(box3d, class_names_, obj);
-    raw_objects.emplace_back(obj);
+    autoware_msgs::DetectedObject object;
+    object.header = pc_msg->header;
+    // box3DToDetectedObject(box3d, class_names_, has_twist_, has_variance_, obj);
+    object.valid = true;
+    object.pose_reliable = true;
+    object.pose.position.x = box3d.x;
+    object.pose.position.y = box3d.y;
+    object.pose.position.z = box3d.z;
+    object.dimensions.x = box3d.length;
+    object.dimensions.y = box3d.width;
+    object.dimensions.z = box3d.height;
+    // mmdet3d yaw format to ros yaw format
+    // const float yaw = -box3d.yaw - M_PI / 2;
+    float yaw = box3d.yaw;
+    tf2::Quaternion quaternion;
+    quaternion.setRPY(0, 0, yaw); // 设置偏航角
+    geometry_msgs::Quaternion q = tf2::toMsg(quaternion); 
+    object.pose.orientation = q;
+    object.score = box3d.score;
+    const char* label_names[] = {"car", "truck", "bus", "bicycle", "pedestrian"};
+    object.label = label_names[box3d.label];
+
+    raw_objects.emplace_back(object);
   }
+  // for (const auto & box3d : det_boxes3d) {
+  //   autoware_msgs::DetectedObject obj;
+  //   // box3DToDetectedObject(box3d, class_names_, obj);
+  //   raw_objects.emplace_back(obj);
+  // }
 
   autoware_msgs::DetectedObjectArray output_msg;
   output_msg.header = pc_msg->header;
+  output_msg.objects = raw_objects;
   // output_msg.objects = iou_bev_nms_.apply(raw_objects);
 
   // detection_class_remapper_.mapClasses(output_msg);
 
   objects_pub_.publish(output_msg);
-
-  // // add processing time for debug
-  // if (debug_publisher_ptr_ && stop_watch_ptr_) {
-  //   const double cyclic_time_ms = stop_watch_ptr_->toc("cyclic", true);
-  //   const double processing_time_ms = stop_watch_ptr_->toc("processing/total", true);
-  //   const double pipeline_latency_ms =
-  //     (ros::Time::now() - output_msg.header.stamp).toSec() * 1000.0;
-  //   debug_publisher_ptr_->publish<tier4_debug_msgs::Float64Stamped>(
-  //     "debug/cyclic_time_ms", cyclic_time_ms);
-  //   debug_publisher_ptr_->publish<tier4_debug_msgs::Float64Stamped>(
-  //     "debug/pipeline_latency_ms", pipeline_latency_ms);
-  // }
+  ROS_INFO("Detection took %f ms", (ros::Time::now() - start_time).toSec() * 1000);
 }
 
-void LidarBEVFusionNode::imageCallback(const sensor_msgs::ImageConstPtr& msg, const int64_t camera_id)
+void LidarBEVFusionNode::imageCallback(
+  const sensor_msgs::ImageConstPtr& msg, const int64_t camera_id)
 {
   image_msgs_[camera_id] = msg;
-  images_available_ = true;
+
+  // 检查所有摄像头的图像是否已接收
+  std::size_t num_valid_images = std::count_if(
+    image_msgs_.begin(), image_msgs_.end(),
+    [](const auto& image_msg) { return image_msg != nullptr; });
+
+  // 只有所有图像都有效时才标记为可用
+  images_available_ = (num_valid_images == image_msgs_.size());
 }
 
 void LidarBEVFusionNode::cameraInfoCallback(
@@ -314,16 +343,16 @@ void LidarBEVFusionNode::cameraInfoCallback(
 
   // If extrinsics are already available or lidar frame is not set, return early
   if (
-    !lidar2camera_extrinsics_[camera_id].isZero() || lidar_frame_.empty() ||
-    extrinsics_available_) {
+    lidar_frame_.empty() || extrinsics_available_) {
     return;
   }
 
   try {
-    // Lookup transform from camera frame to lidar frame
+    // Lookup transform from camera frame to lidar frame, lookupTransform(target_frame, source_frame, time)
     geometry_msgs::TransformStamped transform_stamped;
     transform_stamped =
-      tf_buffer_.lookupTransform(msg.header.frame_id, lidar_frame_, ros::Time(0));
+      tf_buffer_.lookupTransform(msg.header.frame_id, lidar_frame_, ros::Time(0), ros::Duration(1));
+    ROS_INFO("get_tranformed");
 
     // Convert transform to Eigen matrix
     Eigen::Matrix4f lidar2camera_transform =
@@ -332,9 +361,15 @@ void LidarBEVFusionNode::cameraInfoCallback(
     // Ensure row-major storage
     Matrix4f lidar2camera_rowmajor_transform = lidar2camera_transform.eval();
     lidar2camera_extrinsics_[camera_id] = lidar2camera_rowmajor_transform;
-  } catch (tf2::TransformException & ex) {
-    ROS_WARN("%s", ex.what());
-    return;
+  } catch (const tf2::LookupException& ex) {
+      ROS_ERROR("TF Lookup failed: %s", ex.what());
+  } catch (const tf2::ConnectivityException& ex) {
+      ROS_ERROR("TF Connectivity failed: %s", ex.what());
+  } catch (const tf2::ExtrapolationException& ex) {
+      // Ignore ExtrapolationException (TF_OLD_DATA)
+      ROS_WARN("TF Extrapolation failed (ignoring): %s", ex.what());
+  } catch (const tf2::TransformException& ex) {
+      ROS_ERROR("TF Transform failed: %s", ex.what());
   }
 
   // Count the number of valid extrinsics

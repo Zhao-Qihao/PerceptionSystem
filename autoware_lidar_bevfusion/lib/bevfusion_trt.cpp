@@ -374,12 +374,18 @@ bool BEVFusionTRT::preProcess(
 {
   using autoware::cuda_utils::clear_async;
 
-  if (pc_msg->height * pc_msg->width == 0) {
-    ROS_ERROR("Empty pointcloud. Skipping detection.");
+  if (!pc_msg || pc_msg->height * pc_msg->width == 0) {
+    ROS_ERROR("Invalid point cloud message.");
+    return false;
+  }
+
+  if (config_.sensor_fusion_ && image_msgs.size() != config_.num_cameras_) {
+    ROS_ERROR("Number of image messages does not match the number of cameras.");
     return false;
   }
 
   if (!vg_ptr_->enqueuePointCloud(*pc_msg, tf_buffer)) {
+    ROS_ERROR("Failed to enqueue point cloud.");
     return false;
   }
 
