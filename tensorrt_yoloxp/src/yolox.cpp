@@ -240,8 +240,8 @@ void YOLOXNode::pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_
         autoware_msgs::DetectedObject object;
         object.header = header;
         object.label = class_name_[detected_object.type];
-        if (object.label == "animal" || object.label == "unknown") {
-            object.label = "barrier";
+        if (object.label == "animal") {
+            object.label = "unknown";
         } // only label 'car', 'truck', 'bus', 'pedestrian', 'cyclist' , 'unknown' are valid
         object.valid = true;
         object.x = detected_object.x_offset;
