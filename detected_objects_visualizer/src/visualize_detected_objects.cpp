@@ -174,7 +174,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
 
   label_markers = ObjectsToLabels(in_objects);
   arrow_markers = ObjectsToArrows(in_objects);   // velocity arrows
-  polygon_hulls = ObjectsToHulls(in_objects);    // polygon hulls
+  // polygon_hulls = ObjectsToHulls(in_objects);    // polygon hulls
   bounding_boxes = ObjectsToBoxes(in_objects);
   // object_models = ObjectsToModels(in_objects);  // dae models
   centroid_markers = ObjectsToCentroids(in_objects);
@@ -497,7 +497,8 @@ VisualizeDetectedObjects::ObjectsToArrows(const autoware_msgs::DetectedObjectArr
   visualization_msgs::MarkerArray arrow_markers;
   for (auto const &object: in_objects.objects)
   {
-    if (IsObjectValid(object) && object.pose_reliable)
+    // if (IsObjectValid(object) && object.pose_reliable)
+    if (true)
     {
       double velocity = object.velocity.linear.x;
 
@@ -575,7 +576,8 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
   visualization_msgs::MarkerArray label_markers;
   for (auto const &object: in_objects.objects)
   {
-    if (IsObjectValid(object))
+    // if (IsObjectValid(object))
+    if (true)
     {
       visualization_msgs::Marker label_marker;
 
@@ -602,7 +604,8 @@ VisualizeDetectedObjects::ObjectsToLabels(const autoware_msgs::DetectedObjectArr
       std::string distance_str = distance_stream.str() + " m";
       label_marker.text += distance_str;
 
-      if (object.velocity_reliable)
+      // if (object.velocity_reliable)
+      if (true)
       {
         double velocity = object.velocity.linear.x;
         if (velocity < -0.1)

@@ -50,6 +50,7 @@ add_executable(lidar_euclidean_cluster_detect
   src/lidar_euclidean_cluster_detect/cluster.cpp
 )
 
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8")
 find_package(CUDA)
 find_package(Eigen3 QUIET)
 
@@ -60,7 +61,6 @@ message("-- USING ACCELERATED CLUSTERING --")
 message("Version: " ${CUDA_VERSION})
 message("Runtime: " ${CUDA_CUDART_LIBRARY})
 message("Library: " ${CUDA_CUDA_LIBRARY})
-message("Runtime: " ${CUDA_CUDART_LIBRARY})
 target_compile_definitions(lidar_euclidean_cluster_detect PRIVATE
   GPU_CLUSTERING=1
 )

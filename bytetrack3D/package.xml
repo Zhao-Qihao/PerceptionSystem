@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>bytetrack3D</name>
+  <version>0.0.1</version>
+  <description>ByteTrack3D implementation ported toward Autoware</description>
+  <maintainer email="manato.hirabayashi@tier4.jp">Manato HIRABAYASHI</maintainer>
+  <maintainer email="yoshi.ri@tier4.jp">Yoshi RI</maintainer>
+  <maintainer email="beginning.fan@autocore.ai">beginning.fan</maintainer>
+  <maintainer email="cynthia.liu@autocore.ai">cyn-liu</maintainer>
+  <license>Apache License 2.0</license>
+
+  <!-- 使用 Catkin 作为构建工具 -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- 依赖项调整为 ROS 1 格式 -->
+  <build_depend>roscpp</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_geometry_msgs</build_depend>
+  <build_depend>yaml-cpp</build_depend>
+  <build_depend>Boost</build_depend>
+  <build_depend>OpenCV</build_depend>
+
+  <!-- 运行时依赖 -->
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_geometry_msgs</exec_depend>
+  <exec_depend>yaml-cpp</exec_depend>
+  <exec_depend>Boost</exec_depend>
+  <exec_depend>OpenCV</exec_depend>
+
+  <!-- 插件注册（如需） -->
+  <export>
+    <node_type plugin="${prefix}/bytetrack3d.xml" type="ByteTrack3DNode" name="bytetrack3D_node"/>
+  </export>
+</package>

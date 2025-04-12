@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
   <!-- <arg name="points_node" default="/kitti/velo/pointcloud" /> -->
-  <arg name="points_node" default="/lidar_top" />
+  <arg name="points_node" default="/rslidar_points" />
   <arg name="remove_ground" default="true" />
   <arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
   <arg name="leaf_size" default="0.10" /><!-- Voxel Grid Filter leaf size-->
@@ -19,20 +19,20 @@
   <arg name="remove_behind_lane" default="false" />
   <arg name="keep_behind_lane_distance" default="20" />
   <arg name="cluster_merge_threshold" default="1.5" />
-  <arg name="clustering_distance" default="0.75" />
+  <arg name="clustering_distance" default="0.45" />
 
   <arg name="wayarea_gridmap_layer" default="wayarea" />
 
-  <arg name="output_frame" default="lidar_top" />
+  <arg name="output_frame" default="rslidar" />
 
   <arg name="remove_points_upto" default="0" />
 
   <arg name="use_gpu" default="true" />
 
-  <arg name="use_multiple_thres" default="false"/>
-  <arg name="clustering_ranges" default="[15,30,45,60]"/><!-- Distances to segment pointcloud -->
+  <arg name="use_multiple_thres" default="true"/>
+  <arg name="clustering_ranges" default="[5,15,30,45,60]"/><!-- Distances to segment pointcloud -->
   <arg name="clustering_distances"
-       default="[0.5,1.1,1.6,2.1,2.6]"/><!-- Euclidean Clustering threshold distance for each segment -->
+       default="[0.1,0.5,1.1,1.6,2.1,2.6]"/><!-- Euclidean Clustering threshold distance for each segment -->
 
   <arg name="enable_visualizer" default="true"/>
 
