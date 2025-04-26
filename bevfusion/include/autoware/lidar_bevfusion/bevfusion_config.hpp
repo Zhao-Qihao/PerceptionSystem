@@ -39,7 +39,8 @@ public:
     const std::int64_t roi_width, const std::int64_t features_height,
     const std::int64_t features_width, const std::int64_t num_depth_features,
     const std::int64_t num_proposals, const float circle_nms_dist_threshold,
-    const std::vector<double> & yaw_norm_thresholds, const float score_threshold)
+    const std::vector<double> & yaw_norm_thresholds, const float score_threshold,
+    const std::int64_t num_point_feature_size)
   {
     sensor_fusion_ = sensor_fusion;
     plugins_path_ = plugins_path;
@@ -48,6 +49,7 @@ public:
 
     cloud_capacity_ = cloud_capacity;
     max_points_per_voxel_ = max_points_per_voxel;
+    num_point_feature_size_ = num_point_feature_size;
 
     if (voxels_num.size() == 3) {
       min_num_voxels_ = voxels_num[0];
@@ -128,7 +130,7 @@ public:
   std::int64_t min_num_voxels_{};
   std::int64_t max_num_voxels_{};
   std::int64_t max_points_per_voxel_;
-  const std::int64_t num_point_feature_size_{5};  // x, y, z, intensity, lag
+  std::int64_t num_point_feature_size_{};  // x, y, z, intensity, lag
 
   // Pointcloud range in meters
   float min_x_range_{};

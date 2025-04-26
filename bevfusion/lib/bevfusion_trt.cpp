@@ -133,7 +133,7 @@ void BEVFusionTRT::initTrt(const tensorrt_common::TrtCommonConfig & trt_config)
 
   // Camera branch
   if (config_.sensor_fusion_) {
-    network_io.emplace_back("points", nvinfer1::Dims{2, {-1, 5}});
+    network_io.emplace_back("points", nvinfer1::Dims{2, {-1, config_.num_point_feature_size_}});
     network_io.emplace_back("camera_mask", nvinfer1::Dims{1, {-1}});
     network_io.emplace_back(
       "imgs", nvinfer1::Dims{4, {-1, 3, config_.roi_height_, config_.roi_width_}});
@@ -174,9 +174,9 @@ void BEVFusionTRT::initTrt(const tensorrt_common::TrtCommonConfig & trt_config)
   // Camera branch
   if (config_.sensor_fusion_) {
     profile_dims.emplace_back(
-      "points", nvinfer1::Dims{2, {config_.voxels_num_[0], 5}},
-      nvinfer1::Dims{2, {config_.voxels_num_[1], 5}},
-      nvinfer1::Dims{2, {config_.voxels_num_[2], 5}});
+      "points", nvinfer1::Dims{2, {config_.voxels_num_[0], config_.num_point_feature_size_}},
+      nvinfer1::Dims{2, {config_.voxels_num_[1], config_.num_point_feature_size_}},
+      nvinfer1::Dims{2, {config_.voxels_num_[2], config_.num_point_feature_size_}});
 
     profile_dims.emplace_back(
       "camera_mask", nvinfer1::Dims{1, {1}}, nvinfer1::Dims{1, {config_.num_cameras_}},
@@ -463,7 +463,7 @@ bool BEVFusionTRT::preProcess(
 
   if (config_.sensor_fusion_) {
     network_trt_ptr_->setInputShape(
-      "points", nvinfer1::Dims{2, {static_cast<std::int64_t>(num_points), 5}});
+      "points", nvinfer1::Dims{2, {static_cast<std::int64_t>(num_points), config_.num_point_feature_size_}});
     network_trt_ptr_->setInputShape("geom_feats", nvinfer1::Dims{2, {num_ranks_, 4}});
     network_trt_ptr_->setInputShape("kept", nvinfer1::Dims{1, {num_kept_}});
     network_trt_ptr_->setInputShape("ranks", nvinfer1::Dims{1, {num_ranks_}});

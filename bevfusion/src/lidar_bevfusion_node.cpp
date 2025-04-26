@@ -98,6 +98,8 @@ LidarBEVFusionNode::LidarBEVFusionNode()
   
   int num_depth_features;
   nh_.param("num_depth_features", num_depth_features, 0);
+  int num_point_feature_size;
+  nh_.param("num_point_feature_size", num_point_feature_size, 0);
 
   // Head parameters
   int num_proposals;
@@ -175,7 +177,7 @@ LidarBEVFusionNode::LidarBEVFusionNode()
       voxels_num_converted, point_cloud_range, voxel_size, d_bound, x_bound, y_bound, z_bound,
       num_cameras, raw_image_height, raw_image_width, img_aug_scale_x, img_aug_scale_y, roi_height,
       roi_width, features_height, features_width, num_depth_features, num_proposals,
-      circle_nms_dist_threshold, yaw_norm_thresholds_converted, score_threshold
+      circle_nms_dist_threshold, yaw_norm_thresholds_converted, score_threshold, num_point_feature_size
   );
 
   std::vector<int64_t> allow_remapping_by_area_matrix;
@@ -293,8 +295,16 @@ void LidarBEVFusionNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& p
     geometry_msgs::Quaternion q = tf2::toMsg(quaternion); 
     object.pose.orientation = q;
     object.score = box3d.score;
-    const char* label_names[] = {"car", "truck", "bus", "bicycle", "pedestrian"};
-    object.label = label_names[box3d.label];
+    const char* label_names[] = {"car", "truck", "bus", "bicycle", "pedestrian", "traffic_cone", "barrier", };
+    const size_t num_labels = sizeof(label_names) / sizeof(label_names[0]);
+    // Ensure box3d.label is within valid range
+    if (box3d.label >= 0 && box3d.label < static_cast<int>(num_labels)) {
+      object.label = label_names[box3d.label];
+    } else {
+      // Handle invalid label case (e.g., assign a default label or log an error)
+      object.label = "unknown";
+      ROS_WARN("Invalid label value: %d. Assigned 'unknown' as default.", box3d.label);
+    }
 
     raw_objects.emplace_back(object);
   }
