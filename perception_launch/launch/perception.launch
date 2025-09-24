@@ -19,9 +19,9 @@
         <include file="$(find lidar_centerpoint)/launch/lidar_centerpoint.launch">
             <arg name="input/pointcloud" value="/rslidar_points_filtered"/>
         </include>
-        <!-- <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
             <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
-        </include> -->
+        </include>
         <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
             <arg name="points_node" value="/rslidar_points_filtered"/>
             <arg name="output_frame" value="rslidar"/> 

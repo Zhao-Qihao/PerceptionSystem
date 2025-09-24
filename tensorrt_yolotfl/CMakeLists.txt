@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(tensorrt_yoloxp)
+project(tensorrt_yolotfl)
 
 enable_language(CUDA)
 
@@ -52,9 +52,9 @@ link_directories(/usr/local/cuda/lib64)
 
 # detector lib (cuda)
 file(GLOB_RECURSE sources lib/tensorrt_common/tensorrt_common.cpp lib/tensorrt_common/simple_profiler.cpp lib/tensorrt_yolox/tensorrt_yolox.cpp lib/tensorrt_yolox/preprocess.cu)
-add_library(tensorrt_yoloxp_detector SHARED ${sources})
+add_library(detector SHARED ${sources})
 
-target_link_libraries(tensorrt_yoloxp_detector
+target_link_libraries(detector
   ${catkin_LIBRARIES}
   nvinfer
   nvinfer_plugin
@@ -69,7 +69,7 @@ target_link_libraries(tensorrt_yoloxp_detector
   dl
 )
 
-target_include_directories(tensorrt_yoloxp_detector PRIVATE
+target_include_directories(detector PRIVATE
   extra/
   modules/
   ${OpenCV_INCLUDE_DIRS}
@@ -77,15 +77,15 @@ target_include_directories(tensorrt_yoloxp_detector PRIVATE
 )
 
 # executable
-add_executable(tensorrt_yoloxp_node src/yolox.cpp src/yolox_node.cpp src/yolo_config_parser.cpp ${sources})
-# add_executable(tensorrt_yoloxp src/main_node.cpp src/yolo_config_parser.cpp ${sources})
+add_executable(tensorrt_yolotfl_node src/yolox.cpp src/yolox_node.cpp src/yolo_config_parser.cpp ${sources})
+# add_executable(tensorrt_yolotfl src/main_node.cpp src/yolo_config_parser.cpp ${sources})
 
-target_include_directories(tensorrt_yoloxp_node PRIVATE
+target_include_directories(tensorrt_yolotfl_node PRIVATE
   include
   ${catkin_INCLUDE_DIRS}
 )
 
-target_link_libraries(tensorrt_yoloxp_node
+target_link_libraries(tensorrt_yolotfl_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   nvinfer
@@ -104,7 +104,7 @@ target_link_libraries(tensorrt_yoloxp_node
 )
 
 # Install rules
-install(TARGETS tensorrt_yoloxp_node tensorrt_yoloxp_detector
+install(TARGETS tensorrt_yolotfl_node detector
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

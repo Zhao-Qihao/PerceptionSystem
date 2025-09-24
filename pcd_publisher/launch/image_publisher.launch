@@ -1,6 +1,7 @@
 <launch>
     <!-- 定义图片路径参数 -->
-    <arg name="image_path" value="/home/itachi/data/kitti/RawData/2011_09_26/2011_09_26_drive_0005_sync/image_02/data/0000000140.png" />
+    <!-- <arg name="image_path" value="/home/itachi/data/kitti/RawData/2011_09_26/2011_09_26_drive_0005_sync/image_02/data/0000000140.png" />-->
+    <arg name="image_path" value="/home/itachi/data/xbzl_tfl/xbzl_tfl_coco/test2017/1749727884.jpg" />
     <arg name="frame_rate" value="10" />
     <arg name="frame_id" default="camera_color_left" />
     <arg name="output_topic" value="/kitti/camera_color_left/image_raw" />

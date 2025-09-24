@@ -1,0 +1,17 @@
+id,name,r,g,b
+0,others,0,0,0
+1,buildling,70,70,70
+2,wall,150,150,150
+3,obstacle,255,0,255
+4,traffic_light,250,170,30
+5,traffic_sign,220,220,0
+6,person,220,20,60
+7,vehicle,0,0,142
+8,bike,220,20,60
+9,road,128,64,128
+10,sidewalk,255,0,255
+11,roadPaint,128,64,128
+12,curbstone,10,0,10
+13,crosswalk_others,128,64,128
+14,vegetation,147,253,194
+15,sky,135,206,255

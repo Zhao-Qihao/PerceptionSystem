@@ -173,7 +173,7 @@ void VisualizeDetectedObjects::DetectedObjectsCallback(const autoware_msgs::Dete
   marker_id_ = 0;
 
   label_markers = ObjectsToLabels(in_objects);
-  arrow_markers = ObjectsToArrows(in_objects);   // velocity arrows
+  // arrow_markers = ObjectsToArrows(in_objects);   // velocity arrows
   // polygon_hulls = ObjectsToHulls(in_objects);    // polygon hulls
   bounding_boxes = ObjectsToBoxes(in_objects);
   // object_models = ObjectsToModels(in_objects);  // dae models

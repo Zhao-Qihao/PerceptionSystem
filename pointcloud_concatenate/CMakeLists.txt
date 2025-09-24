@@ -15,7 +15,10 @@ find_package(catkin REQUIRED COMPONENTS # Must be same as CATKIN_DEPENDS
         tf2_ros
         sensor_msgs
 )
-find_package(PCL REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io filters)
+
+# 线程库（避免 -lpthreads 问题）
+find_package(Threads REQUIRED)
 
 ## Find system libraries
 find_package(Eigen3 REQUIRED)
@@ -64,6 +67,7 @@ add_library(${PROJECT_NAME}
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}
+        Threads::Threads
 )
 
 # Declare cpp executables
@@ -74,6 +78,7 @@ target_compile_features(${PROJECT_NAME}_node INTERFACE cxx_std_11)
 target_link_libraries(${PROJECT_NAME}_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
+        Threads::Threads
 )
 
 
