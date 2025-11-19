@@ -12,3 +12,5 @@ obstacle_pointcloud_validator
 *.launch
 *.yaml
 bevfusion/models
+*.onnx
+*.engine

@@ -22,7 +22,7 @@ public:
     void imageCallback(const sensor_msgs::ImageConstPtr& msg);
     void image2point_IPM(tensorrt_yolox::Object& object);
     void pubDetectedImage(const tensorrt_yolox::ObjectArrays& objects, const cv::Mat& image, const std_msgs::Header& header);
-    void pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header);
+    void pubTrafficLightResults(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header);
     // void pubDetected3DBoxes(tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header);
     bool filter_dist_objects(autoware_msgs::DetectedObject& object);
     void giveDimentions(autoware_msgs::DetectedObject& object);
@@ -35,7 +35,7 @@ private:
     image_transport::Subscriber sub_image_;
     image_transport::Publisher pub_image_;
 
-    ros::Publisher pub_bboxes_;
+    ros::Publisher pub_tlr_;
     // ros::Publisher pub_bboxes_3d_;
     std::unique_ptr<tensorrt_yolox::TrtYoloX> trt_yolox_;
     bool init_;

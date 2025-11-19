@@ -4,6 +4,8 @@
 #include "yolo_config_parser.h"
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
+#include <autoware_msgs/TrafficLightResult.h>
+#include <autoware_msgs/TrafficLightResultArray.h>
 
 YOLOXNode::YOLOXNode(ros::NodeHandle& nh, int argc, char* argv[]) 
     : nh_(nh), it_(nh_), init_(true) {
@@ -49,7 +51,7 @@ YOLOXNode::YOLOXNode(ros::NodeHandle& nh, int argc, char* argv[])
 
 void YOLOXNode::createRosSubPub() {
     pub_image_ = it_.advertise("/detection/image_detector/detected_image", 1);
-    pub_bboxes_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/image_detector/tfl_objects", 1);
+    pub_tlr_ = nh_.advertise<autoware_msgs::TrafficLightResultArray>("/detection/traffic_light/results", 1);
     // pub_bboxes_3d_ = nh_.advertise<autoware_msgs::DetectedObjectArray>("/detection/image_detector/3d_objects_new", 1);
 
     sub_image_ = it_.subscribe(input_topic, 1, &YOLOXNode::imageCallback, this);
@@ -69,7 +71,7 @@ void YOLOXNode::imageCallback(const sensor_msgs::ImageConstPtr& msg) {
         tensorrt_yolox::ObjectArrays objects;
         trt_yolox_->doInference({image}, objects);
         pubDetectedImage(objects, image, msg->header);
-        pubDetected2DBoxes(objects, msg->header);
+        pubTrafficLightResults(objects, msg->header);
         // pubDetected3DBoxes(objects, msg->header);
         auto end_time = std::chrono::system_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
@@ -233,26 +235,34 @@ void YOLOXNode::giveDimentions(autoware_msgs::DetectedObject& object) {
     }
 }
 
-void YOLOXNode::pubDetected2DBoxes(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
-    autoware_msgs::DetectedObjectArray objects;
-    objects.header = header;
-    for (const auto & detected_object : detected_objects[0]) {
-        autoware_msgs::DetectedObject object;
-        object.header = header;
-        object.label = class_name_[detected_object.type];
-        if (object.label == "animal") {
-            object.label = "unknown";
-        } // only label 'car', 'truck', 'bus', 'pedestrian', 'cyclist' , 'unknown' are valid
-        object.valid = true;
-        object.x = detected_object.x_offset;
-        object.y = detected_object.y_offset;
-        object.width = detected_object.width;
-        object.height = detected_object.height;
-        object.score = detected_object.score;
+void YOLOXNode::pubTrafficLightResults(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
+    autoware_msgs::TrafficLightResultArray out;
+    out.header = header;
+    // TODO: 1. 根据name修改msg   2. 检测到多个红绿灯怎么办， 可以根据检测框位置或其他逻辑设置？
+    int id = 0;
+    for (const auto& d : detected_objects[0]) {
+        autoware_msgs::TrafficLightResult r;
+        const std::string& label = class_name_[d.type];
+        std::cout << "label: " << label << std::endl;
 
-        objects.objects.push_back(object);
+        int state = 2;
+        std::string state_str = "UNKNOWN";
+        if (label == "green" || label == "Green") {
+            state = 1; state_str = "GREEN";
+        } else if (label == "red" || label == "Red") {
+            state = 0; state_str = "RED";
+        } else if (label == "yellow" || label == "Yellow" || label == "amber") {
+            state = 0; state_str = "YELLOW";
+        }
+
+        r.light_id = id++;     // 无法确定真实ID时用递增占位
+        r.recognition_result = state;
+        r.recognition_result_str = state_str;
+        r.lane_id = -1;        // 暂无车道ID，设为-1
+        out.results.push_back(r);
     }
-    pub_bboxes_.publish(objects);
+
+    pub_tlr_.publish(out);
 }
 
 bool YOLOXNode::getProfFlag() const {
