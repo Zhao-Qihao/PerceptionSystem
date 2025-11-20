@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="lidar_pointconcat" type="pointconcat_node" name="pointconcat" output="screen">
+    <rosparam file="$(find lidar_pointconcat)/config/params.yaml" command="load"/>
+  </node>
+</launch>

@@ -1,0 +1,5 @@
+<launch>
+    <!-- Node to run the extrinsic publisher -->
+    <node pkg="camera_info_publisher" type="camera_info_publisher" name="camera_info_publisher" output="screen">
+    </node>
+</launch>

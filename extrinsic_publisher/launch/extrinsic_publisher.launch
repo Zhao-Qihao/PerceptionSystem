@@ -1,0 +1,11 @@
+<launch>
+    <!-- Node to run the extrinsic publisher -->
+    <arg name="lidar_frame_id" default="lidar_top"/>
+    <node pkg="extrinsic_publisher" type="extrinsic_publisher_node.py" name="extrinsics_publisher" output="screen">
+        <!-- Path to the extrinsics YAML file -->
+        <param name="extrinsics_file" value="$(find extrinsic_publisher)/config/extrinsics.yaml" />
+
+        <!-- Frame ID for the LiDAR (can be overridden as needed) -->
+        <param name="lidar_frame_id" value="$(arg lidar_frame_id)" />
+    </node>
+</launch>

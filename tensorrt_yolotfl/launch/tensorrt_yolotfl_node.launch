@@ -1,0 +1,34 @@
+<launch>
+  <arg name="input_topic" default="/kitti/camera_color_left/image_raw" />
+  <arg name="onnx_model_path" default="$(find tensorrt_yolotfl)/model/yolox_tfl_640.onnx" />
+  <arg name='precision' default='fp32' />
+  <arg name='nms_thresh' default='0.7' />
+  <arg name='score_thresh' default='0.3' />
+  <arg name='num_class' default='37' />
+  <arg name='classname_path' default="$(find tensorrt_yolotfl)/data/tfl.names" />
+  <arg name='rgbfile_path' default="$(find tensorrt_yolotfl)/data/tfl.colormap" />
+  <arg name='detected_objects_visualizer' default="false"/>
+
+  <node pkg="tensorrt_yolotfl" type="tensorrt_yolotfl_node" name="tensorrt_yolotfl_node" output="screen">
+    <param name="input_topic" value="$(arg input_topic)" />
+    <param name="onnx_model_path" value="$(arg onnx_model_path)" />
+    <param name="precision" value="$(arg precision)" />
+    <param name="nms_thresh" value="$(arg nms_thresh)" />
+    <param name="score_thresh" value="$(arg score_thresh)" />
+    <param name="num_class" value="$(arg num_class)" />
+    <param name="classname_path" value="$(arg classname_path)" />
+    <param name="rgbfile_path" value="$(arg rgbfile_path)" />
+  </node>
+
+  <node if="$(arg detected_objects_visualizer)" pkg="detected_objects_visualizer" type="visualize_rects" name="image_detect_visualization_01"
+        output="screen" ns="/detection/camera_detector">
+    <param name="image_src" value="/kitti/camera_color_left/image_raw"/>
+    <param name="objects_src_topic" value="/detection/image_detector/tfl_objects"/>
+    <param name="image_out" value="/image_rects"/>
+  </node>
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+        output="screen" ns="/detection/image_detector">
+    <param name="objects_src_topic" value="/3d_objects_new"/>
+  </node>
+</launch>

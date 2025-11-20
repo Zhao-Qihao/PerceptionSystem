@@ -1,0 +1,63 @@
+<launch>
+  <!-- 参数定义 -->
+  <arg name="input/pointcloud" default="/lidar_top"/>
+  <arg name="output/objects" default="/detection/bevfusion/objects"/>
+  <arg name="sensor_fusion" default="false"/>
+  <arg name="model_name" if="$(arg sensor_fusion)" default="bevfusion_camera_lidar"/> <!-- sensor_fusion=true时model_name=bevfusion_camera_lidar -->
+  <arg name="model_name" unless="$(arg sensor_fusion)" default="bevfusion_lidar"/>    <!-- sensor_fusion=false时model_name=bevfusion_lidar -->
+  <arg name="model_path" default="$(find bevfusion)/models"/>
+  <arg name="model_param_path" default="$(find bevfusion)/config/bevfusion.param.yaml"/>
+  <arg name="ml_package_param_path" default="$(find bevfusion)/config/bevfusion_ml_package.param.yaml"/>
+  <arg name="class_remapper_param_path" default="$(find bevfusion)/config/detection_class_remapper.param.yaml"/>
+  <arg name="onnx_path" default="$(arg model_path)/$(arg model_name)_4dim.onnx"/> 
+  <arg name="engine_path" default="$(arg model_path)/$(arg model_name)_4dim.engine"/>
+  <arg name="build_only" default="false"/>
+  <arg name="log_level" default="info"/>
+
+  <!-- 相机信息和图像话题 -->
+  <arg name="camera_info0" default="/camera/camera0/camera_info"/>
+  <arg name="camera_info1" default="/camera/camera1/camera_info"/>
+  <arg name="camera_info2" default="/camera/camera2/camera_info"/>
+  <arg name="camera_info3" default="/camera/camera3/camera_info"/>
+  <arg name="camera_info4" default="/camera/camera4/camera_info"/>
+  <arg name="camera_info5" default="/camera/camera5/camera_info"/>
+
+  <arg name="image0" default="/cam_front/raw"/>
+  <arg name="image1" default="/cam_front_left/raw"/>
+  <arg name="image2" default="/cam_front_right/raw"/>
+  <arg name="image3" default="/cam_back_left/raw"/>
+  <arg name="image4" default="/cam_back_right/raw"/>
+  <arg name="image5" default="/cam_back/raw"/>
+
+  <!-- 节点定义 -->
+  <node pkg="bevfusion" type="bevfusion_node" name="bevfusion" output="screen">
+    <remap from="~/input/pointcloud" to="$(arg input/pointcloud)"/>
+    <remap from="~/output/objects" to="$(arg output/objects)"/>
+    <param name="sensor_fusion" value="$(arg sensor_fusion)"/>
+    <rosparam command="load" file="$(arg model_param_path)" subst_value="true"/>
+    <rosparam command="load" file="$(arg ml_package_param_path)" subst_value="true"/>
+    <rosparam command="load" file="$(arg class_remapper_param_path)"/>
+
+    <remap from="~/input/camera_info0" to="$(arg camera_info0)"/>
+    <remap from="~/input/camera_info1" to="$(arg camera_info1)"/>
+    <remap from="~/input/camera_info2" to="$(arg camera_info2)"/>
+    <remap from="~/input/camera_info3" to="$(arg camera_info3)"/>
+    <remap from="~/input/camera_info4" to="$(arg camera_info4)"/>
+    <remap from="~/input/camera_info5" to="$(arg camera_info5)"/>
+    <remap from="~/input/image0" to="$(arg image0)"/>
+    <remap from="~/input/image1" to="$(arg image1)"/>
+    <remap from="~/input/image2" to="$(arg image2)"/>
+    <remap from="~/input/image3" to="$(arg image3)"/>
+    <remap from="~/input/image4" to="$(arg image4)"/>
+    <remap from="~/input/image5" to="$(arg image5)"/>
+
+
+    <param name="build_only" value="$(arg build_only)"/>
+    <param name="onnx_path" value="$(arg onnx_path)"/>
+    <param name="engine_path" value="$(arg engine_path)"/>
+  </node>
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="cluster_detect_visualization_01"
+        output="screen" ns="/detection/bevfusion">
+    <param name="objects_src_topic" value="/objects"/>
+  </node>
+</launch>

@@ -1,0 +1,8 @@
+input_topics: [/middle_helios/rslidar_points_unique, /back/rslidar_points_unique]
+output_topic: /points_concat
+output_frame: base_link
+max_delay: 0.05
+queue_size: 5
+publish_on_input: true
+# 若 publish_on_input 为 false，可用下面的发布频率（Hz）
+publish_rate: 10.0

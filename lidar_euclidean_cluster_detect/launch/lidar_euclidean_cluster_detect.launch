@@ -1,7 +1,7 @@
 <!-- -->
 <launch>
   <!-- <arg name="points_node" default="/kitti/velo/pointcloud" /> -->
-  <arg name="points_node" default="/rslidar_points" />
+  <arg name="points_node" default="/lidar_top" />
   <arg name="remove_ground" default="true" />
   <arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
   <arg name="leaf_size" default="0.10" /><!-- Voxel Grid Filter leaf size-->
@@ -23,7 +23,7 @@
 
   <arg name="wayarea_gridmap_layer" default="wayarea" />
 
-  <arg name="output_frame" default="rslidar" />
+  <arg name="output_frame" default="lidar_top" />
 
   <arg name="remove_points_upto" default="0" />
 
