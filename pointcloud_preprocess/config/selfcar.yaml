@@ -1,0 +1,4 @@
+lidar_to_car_left:  0.6   # 左侧距离 (m)
+lidar_to_car_right: 0.8   # 右侧距离 (m)
+lidar_to_car_front: 1.0   # 前方距离 (m)
+lidar_to_car_back:  1.0  # 后方距离 (m)

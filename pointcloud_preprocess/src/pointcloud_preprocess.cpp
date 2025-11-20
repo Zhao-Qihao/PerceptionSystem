@@ -1,10 +1,7 @@
 #include "pointcloud_preprocess.h"
-
-// 定义车辆边界参数
-const double CAR_LEFT = 0.6;  // 车辆长度
-const double CAR_RIGHT = -0.7;   // 车辆宽度
-const double CAR_FRONT = 0.3; // 车辆中心点在点云坐标系中的X轴偏移
-const double CAR_BACK = -2.45; // 车辆中心点在点云坐标系中的Y轴偏移
+#include <pcl/filters/crop_box.h>
+#include <Eigen/Core>
+#include <limits>
 
 PointCloudPreprocessNode::PointCloudPreprocessNode()
     : nh_("~")
@@ -16,6 +13,12 @@ PointCloudPreprocessNode::PointCloudPreprocessNode()
     nh_.param("output_topic", output_topic_, std::string("/output/pointcloud"));
     nh_.param("remove_self_point", remove_self_point_, true);
 
+    // 激光雷达到车辆边界的距离（从 YAML 读取，给出默认值）
+    nh_.param("lidar_to_car_left",  lidar_to_car_left_,  0.6);
+    nh_.param("lidar_to_car_right", lidar_to_car_right_, 0.7);
+    nh_.param("lidar_to_car_front", lidar_to_car_front_, 0.3);
+    nh_.param("lidar_to_car_back",  lidar_to_car_back_,  2.45);
+
     // 创建发布者和订阅者
     point_cloud_sub_ = nh_.subscribe(input_topic_, 1, &PointCloudPreprocessNode::cloudCallback, this);
     point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2>(output_topic_, 1);
@@ -25,38 +28,53 @@ PointCloudPreprocessNode::~PointCloudPreprocessNode()
 {
 }
 
-// TODO: 这里点云通过一个点一个点进行处理，效率较低，后续可以优化
-bool PointCloudPreprocessNode::isPointInCar(const pcl::PointXYZI& point)
-{
-    // 检查点是否在车辆边界内
-    return (point.x <= CAR_FRONT  &&  point.x >= CAR_BACK  &&
-            point.y <= CAR_LEFT  &&  point.y >= CAR_RIGHT);
-}
-
 void PointCloudPreprocessNode::cloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {   
     ros::Time start = ros::Time::now();
     // 将 ROS 点云消息转换为 PCL 点云
-    pcl::PointCloud<pcl::PointXYZI> cloud;
-    pcl::fromROSMsg(*cloud_msg, cloud);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZI>());
+    pcl::fromROSMsg(*cloud_msg, *cloud);
 
     // 创建 PassThrough 过滤器
     pcl::PassThrough<pcl::PointXYZI> pass;
-    pass.setInputCloud(cloud.makeShared());
+    pass.setInputCloud(cloud);
     pass.setFilterFieldName("z");
     pass.setFilterLimits(clip_min_height_, clip_max_height_);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_z_filtered(new pcl::PointCloud<pcl::PointXYZI>());
+    pass.filter(*cloud_z_filtered);
+
     pcl::PointCloud<pcl::PointXYZI> cloud_filtered;
-    pass.filter(cloud_filtered);
 
     // 如果需要移除自身车辆部分的点云
     if (remove_self_point_) {
-        pcl::PointCloud<pcl::PointXYZI> cloud_without_car;
-        for (const auto& point : cloud_filtered.points) {
-            if (!isPointInCar(point)) {
-                cloud_without_car.push_back(point);
-            }
-        }
-        cloud_filtered = cloud_without_car;
+        pcl::CropBox<pcl::PointXYZI> crop;
+        crop.setInputCloud(cloud_z_filtered);
+
+        // 使用激光雷达到车辆前后左右的距离定义车体包围盒
+        // 坐标系假设：x 前方为正，y 左侧为正
+        const float z_min = std::numeric_limits<float>::lowest();
+        const float z_max = std::numeric_limits<float>::max();
+        Eigen::Vector4f min_pt(
+            -lidar_to_car_back_,   // 车尾在原点后方（x 负）
+            -lidar_to_car_right_,  // 右侧在 y 负
+            z_min,
+            1.0f
+        );
+        Eigen::Vector4f max_pt(
+            lidar_to_car_front_,   // 车头在 x 正
+            lidar_to_car_left_,    // 左侧在 y 正
+            z_max,
+            1.0f
+        );
+        crop.setMin(min_pt);
+        crop.setMax(max_pt);
+
+        // 负向过滤：保留车体包围盒外部的点
+        crop.setNegative(true);
+
+        crop.filter(cloud_filtered);
+    } else {
+        cloud_filtered = *cloud_z_filtered;
     }
 
     // 将过滤后的 PCL 点云转换回 ROS 点云消息

@@ -1,6 +1,3 @@
-#ifndef POINTCLOUD_PREPROCESS_NODE_H
-#define POINTCLOUD_PREPROCESS_NODE_H
-
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -25,6 +22,10 @@ private:
     std::string input_topic_;
     std::string output_topic_;
     bool remove_self_point_;
-};
 
-#endif // POINTCLOUD_PREPROCESS_NODE_H
+    // 激光雷达到车辆边界的距离（由参数服务器读取）
+    double lidar_to_car_left_;
+    double lidar_to_car_right_;
+    double lidar_to_car_front_;
+    double lidar_to_car_back_;
+};
