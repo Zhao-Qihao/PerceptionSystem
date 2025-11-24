@@ -1,0 +1,7 @@
+<launch>
+    <arg name="lidar_frame_id" default="lidar_top"/>
+    <include file="$(find camera_info_publisher)/launch/camera_info_publisher.launch"/>
+    <!-- <include file="$(find extrinsic_publisher)/launch/extrinsic_publisher.launch">
+        <arg name="lidar_frame_id" value="$(arg lidar_frame_id)"/>
+    </include> -->
+</launch>

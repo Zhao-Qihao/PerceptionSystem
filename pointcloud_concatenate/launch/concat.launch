@@ -1,0 +1,40 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="target_frame" default="rslidar" />
+  <arg name="livox_frame" default="livox_frame" />
+  <arg name="robosense_frame" default="rslidar" />
+  <arg name="cloud_in1" default="/l1_points" />
+  <arg name="cloud_in2" default="/l2_points" />
+  <arg name="cloud_in3" default="/l3_points" />
+  <!-- <arg name="cloud_in4" default="/rslidar_points_h32_left" />
+  <arg name="cloud_in5" default="/rslidar_points_m1p" />
+  <arg name="cloud_in6" default="/rslidar_points_h32_right" /> -->
+  <arg name="cloud_in4" default="/pub_rayGround_left" />
+  <arg name="cloud_in5" default="/rslidar_points_m1p" />
+  <!-- <arg name="cloud_in5" default="/rslidar_points_middle" /> -->
+  <arg name="cloud_in6" default="/pub_rayGround_right" />
+  <arg name="cloud_out" default="/cloud_concatenated" />
+
+  <!-- Launch PointCloud2 concatenator node -->
+  <node pkg="pointcloud_concatenate" type="pointcloud_concatenate_node" name="pc_concat" output="screen">
+    <param name="target_frame" value="$(arg target_frame)" />  
+    <param name="livox_frame" value="$(arg livox_frame)" />    
+    <param name="robosense_frame" value="$(arg robosense_frame)" />      
+    <param name="clouds" value="6" />
+    <param name="hz" value="10" />
+    <param name="use_custom" value="true" />
+    <remap from="cloud_in1" to="$(arg cloud_in1)" />
+    <remap from="cloud_in2" to="$(arg cloud_in2)" />
+    <remap from="cloud_in3" to="$(arg cloud_in3)" />
+    <remap from="cloud_in4" to="$(arg cloud_in4)" />
+    <remap from="cloud_in5" to="$(arg cloud_in5)" />
+    <remap from="cloud_in6" to="$(arg cloud_in6)" />
+    <remap from="cloud_out" to="$(arg cloud_out)" />
+  </node>
+
+  <node pkg="tf" type="static_transform_publisher" name="livox_robosense" args="0.0 0.0 0.0 0.0 0.0 0.0 /rslidar /livox_frame 10" />
+  
+  <!-- Launch RViz display -->
+  <node name="pointcloud_concatenate_ui" pkg="rviz" type="rviz" args="-d $(find pointcloud_concatenate)/config/rviz/pointcloud_concatenate.rviz" output="screen" />
+
+</launch>

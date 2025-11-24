@@ -1,0 +1,29 @@
+<launch>
+
+    <group>
+        <!-- 当 use_single_frame 为 true 时，包含 pcd_publisher 下的 pcd_image_publisher.launch文件, topic为/rslidar_points_h32_left或者/rslidar_points -->  
+        <include file="$(find pointcloud_concatenate)/launch/concat.launch">  
+            <arg name="cloud_in4" value="/pub_rayGround_left" />
+            <!-- <arg name="cloud_in5" value="/rslidar_points_m1p" /> -->
+            <arg name="cloud_in5" value="/rslidar_points_middle" />
+            <arg name="cloud_in6" value="/pub_rayGround_right" />
+            <arg name="cloud_out" value="/cloud_concatenated" />
+        </include>
+        <include file="$(find ray_ground_filter)/launch/ray_ground_filter.launch">
+            <!-- <arg name="input_topic" value="/rslidar_points_h32_left" /> -->
+            <arg name="input_topic" value="/rslidar_points_left" />
+            <arg name="output_topic" value="/pub_rayGround_left" />
+        </include>
+        <include file="$(find ray_ground_filter_1)/launch/ray_ground_filter_1.launch">
+            <!-- <arg name="input_topic" value="/rslidar_points_h32_right" /> -->
+            <arg name="input_topic" value="/rslidar_points_right" />
+            <arg name="output_topic" value="/pub_rayGround_right" />
+        </include>
+        <include file="$(find pointcloud_preprocess)/launch/pointcloud_preprocess.launch">
+            <arg name="input_topic" value="/cloud_concatenated" />
+            <arg name="output_topic" value="/cloud_preprocessed" />
+        </include>
+    </group>
+    
+  
+</launch>

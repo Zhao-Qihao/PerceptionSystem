@@ -1,0 +1,44 @@
+<launch>
+    <arg name="use_single_frame" default="false"/>
+    <arg name="detected_objects_visualizer" default="true"/>
+    <arg name="need_concat_points" default="false"/>
+    
+    <include file="$(find pointcloud_preprocess)/launch/pointcloud_preprocess.launch">
+        <arg name="input_topic" value="/rslidar_points"/>
+        <arg name="output_topic" value="/rslidar_points_filtered"/>
+    </include>
+    <group if="$(arg need_concat_points)">
+        <!-- 当 need_concat_points 为 true 时，需要分别将不同激光雷达的点云先进行地面滤除再拼接 -->    
+        <include file="$(find ray_ground_filter)/launch/ray_ground_filter.launch"/>
+        <include file="$(find ray_ground_filter_1)/launch/ray_ground_filter_1.launch"/>
+        <include file="$(find pointcloud_concatenate)/launch/concat.launch"/>
+    </group>
+    
+    <group>
+        <!-- 当 use_single_frame 为 false 时，需要在终端播放rosbag -->
+        <include file="$(find lidar_centerpoint)/launch/lidar_centerpoint.launch">
+            <arg if ="$(arg need_concat_points)" name="input/pointcloud" value="/points_concat"/>
+            <arg unless ="$(arg need_concat_points)" name="input/pointcloud" value="/rslidar_points_filtered"/>
+        </include>
+        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+            <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
+        </include>
+        <include file="$(find tensorrt_yolotfl)/launch/tensorrt_yolotfl_node.launch">
+            <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
+        </include>
+        <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
+            <arg if ="$(arg need_concat_points)" name="points_node" value="/cloud_concatenated"/>
+            <arg if ="$(arg need_concat_points)" name="points_node" value="/rslidar_points_filtered"/>
+            <arg name="output_frame" value="rslidar"/> 
+        </include>
+    </group>
+
+    <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch">
+        <arg name="detected_objects_range" value="/detection/lidar_centerpoint/objects"/>
+        <arg name="detected_objects_vision" value="/detection/lidar_euclidean/objects"/>
+    </include>
+    <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
+        <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
+        <arg name="tracking_frame" value="rslidar"/>
+    </include>
+</launch>

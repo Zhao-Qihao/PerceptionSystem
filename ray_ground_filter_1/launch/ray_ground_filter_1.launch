@@ -1,0 +1,17 @@
+<launch>
+	<arg name="threshold_range" default="30.0" />
+	<arg name="general_max_slope" default="6.0" />
+        <arg name="clipping_height" default="0.4" />
+        <!-- <arg name="input_topic" default="/rslidar_points_right" /> -->
+        <arg name="input_topic" default="/rslidar_points_h32_right" />
+        <arg name="output_topic" default="/pub_rayGround_right" />
+
+        
+        <node pkg="ray_ground_filter_1" type="ray_ground_filter_1" name="ray_ground_filter_1" args="input:=/velodyne_points" output="screen">
+                <param name="threshold_range" value="$(arg threshold_range)"/>
+		<param name="general_max_slope" value="$(arg general_max_slope)"/>
+                <param name="clipping_height" value="$(arg clipping_height)"/>
+                <param name="input_topic" value="$(arg input_topic)"/>
+                <param name="output_topic" value="$(arg output_topic)"/>
+	</node>
+</launch>
