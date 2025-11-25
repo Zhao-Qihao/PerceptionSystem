@@ -18,8 +18,8 @@ find_package(PCL REQUIRED COMPONENTS common io)
 add_definitions(-DTV_CUDA)  # 启用 TensorView 的 CUDA 支持
 
 # Set CUDA-related options
-option(CUDA_VERBOSE "Verbose output of CUDA modules" OFF)
-option(CUDA_AVAIL "CUDA available" OFF)
+option(CUDA_VERBOSE "Verbose output of CUDA modules" ON)
+option(CUDA_AVAIL "CUDA available" ON)
 
 # Check for CUDA availability
 set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12.3")
