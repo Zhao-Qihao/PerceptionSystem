@@ -11,3 +11,4 @@ obstacle_pointcloud_validator
 bevfusion/models
 *.onnx
 *.engine
+# CMakeLists.txt

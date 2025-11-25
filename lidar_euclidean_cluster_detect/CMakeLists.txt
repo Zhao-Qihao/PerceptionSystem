@@ -50,7 +50,7 @@ add_executable(lidar_euclidean_cluster_detect
   src/lidar_euclidean_cluster_detect/cluster.cpp
 )
 
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8")
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12.3")
 find_package(CUDA)
 find_package(Eigen3 QUIET)
 

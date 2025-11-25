@@ -24,7 +24,12 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath -Wl,$ORIGIN")
 
 add_compile_options(-D YOLOX_STANDALONE)
 
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12.3")
 find_package(CUDA REQUIRED)
+message("-- USING ACCELERATED CLUSTERING --")
+message("Version: " ${CUDA_VERSION})
+message("Runtime: " ${CUDA_CUDART_LIBRARY})
+message("Library: " ${CUDA_CUDA_LIBRARY})
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
 find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
@@ -43,11 +48,11 @@ find_library(SYSTEM_LIBCURL NAMES curl PATHS /usr/lib/x86_64-linux-gnu)
 link_directories(/usr/local/cuda/lib64)
 
 # 指定TensorRT的路径
-# set(TensorRT_DIR "/usr/local/TensorRT-8.4.3.1")
-# # 添加TensorRT的include目录
-# include_directories(${TensorRT_DIR}/include)
-# # 添加TensorRT的lib目录到链接器路径
-# link_directories(${TensorRT_DIR}/lib)
+set(TensorRT_DIR "/usr/local/TensorRT-8.4.3.1")
+# 添加TensorRT的include目录
+include_directories(${TensorRT_DIR}/include)
+# 添加TensorRT的lib目录到链接器路径
+link_directories(${TensorRT_DIR}/lib)
 
 
 # detector lib (cuda)

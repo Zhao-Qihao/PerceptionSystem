@@ -185,7 +185,7 @@ void LidarCenterPointNode::pointCloudCallback(const sensor_msgs::PointCloud2::Co
   
   autoware_msgs::DetectedObjectArray output_msg;
   output_msg.header = input_pointcloud_msg->header;
-  output_msg.objects = raw_objects;
+  output_msg.objects = filtered_objects;
   // TODO: add NMS
   // output_msg.objects = iou_bev_nms_.apply(raw_objects);
 
