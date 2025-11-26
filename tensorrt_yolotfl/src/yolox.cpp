@@ -250,7 +250,6 @@ void YOLOXNode::pubTrafficLightResults(const tensorrt_yolox::ObjectArrays& detec
         object.score = detected_object.score;
 
         objects.objects.push_back(object);
-        ROS_INFO_STREAM("object: " << object.label << ", score: " << object.score << ", x: " << object.x << ", y: " << object.y << ", width: " << object.width << ", height: " << object.height);
     }
     pub_tlr_.publish(objects);
 }
