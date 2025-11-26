@@ -48,7 +48,7 @@ find_library(SYSTEM_LIBCURL NAMES curl PATHS /usr/lib/x86_64-linux-gnu)
 link_directories(/usr/local/cuda/lib64)
 
 # 指定TensorRT的路径
-set(TensorRT_DIR "/usr/local/TensorRT-8.4.3.1")
+set(TensorRT_DIR "/usr/local/TensorRT-8.6.1.6")
 # 添加TensorRT的include目录
 include_directories(${TensorRT_DIR}/include)
 # 添加TensorRT的lib目录到链接器路径
