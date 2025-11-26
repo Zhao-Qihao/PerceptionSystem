@@ -5,6 +5,8 @@
 
 #include <kf_msgs/LidarObstacles.h>
 #include <kf_msgs/LidarObstacle.h>
+#include <kf_msgs/TrafficLights.h>
+#include <kf_msgs/TrafficLight.h>
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/PolygonStamped.h>
@@ -28,12 +30,18 @@ public:
     std::string output_array_topic;
     std::string output_single_topic;
 
-    // 1) 订阅跟踪后的话题
+    std::string tl_input_topic;
+    std::string tl_output_topic;
+
     pnh_.param<std::string>("input_topic", input_topic,
                             std::string("/detection/tracking/object_tracker/objects"));
-    // 2) 输出 kf_msgs/LidarObstacles
     pnh_.param<std::string>("output_array_topic", output_array_topic,
                             std::string("/lidar_obstacles"));
+
+    pnh_.param<std::string>("tl_input_topic", tl_input_topic,
+                            std::string("/detection/traffic_light/results"));
+    pnh_.param<std::string>("tl_output_topic", tl_output_topic,
+                            std::string("/ifv_light"));
 
     pnh_.param<double>("static_speed_threshold", static_speed_threshold_, 0.5);
     pnh_.param<int>("max_lost_frames", max_lost_frames_, 30);
@@ -42,6 +50,9 @@ public:
 
     sub_ = nh_.subscribe(input_topic, 1, &TfMsg2Kf::objectsCallback, this);
     pub_array_ = nh_.advertise<kf_msgs::LidarObstacles>(output_array_topic, 1);
+
+    tl_sub_ = nh_.subscribe(tl_input_topic, 1, &TfMsg2Kf::trafficLightsCallback, this);
+    tl_pub_ = nh_.advertise<kf_msgs::TrafficLights>(tl_output_topic, 1);
 
     ROS_INFO_STREAM("TfMsg2Kf node listening on "
                     << input_topic << ", publishing array to "
@@ -53,6 +64,9 @@ private:
   ros::NodeHandle pnh_;
   ros::Subscriber sub_;
   ros::Publisher pub_array_;
+
+  ros::Subscriber tl_sub_;
+  ros::Publisher tl_pub_;
 
   double static_speed_threshold_;
   int max_lost_frames_;
@@ -169,6 +183,124 @@ private:
     }
 
     return LidarObstacle::motion_type_moving;
+  }
+
+  void trafficLightsCallback(const autoware_msgs::DetectedObjectArray::ConstPtr& msg)
+  {
+    kf_msgs::TrafficLights out;
+    out.header = msg->header;
+    out.traffic_lights.reserve(msg->objects.size());
+
+    for (const auto& obj : msg->objects)
+    {
+      // 这几类不发送：prohibit_* / countdown_* / script_*
+      std::string lower = toLower(obj.label);
+      if (lower.find("prohibit") != std::string::npos ||
+          lower.find("countdown") != std::string::npos ||
+          lower.find("script")   != std::string::npos)
+      {
+        continue;
+      }
+
+      kf_msgs::TrafficLight tl;
+      fillTrafficLightFromDetectedObject(obj, tl);
+      out.traffic_lights.push_back(tl);
+    }
+
+    tl_pub_.publish(out);
+  }
+
+  void fillTrafficLightFromDetectedObject(const autoware_msgs::DetectedObject& src,
+                                          kf_msgs::TrafficLight& dst) const
+  {
+    dst.color     = classifyTrafficLightColor(src.label);
+    dst.direction = classifyTrafficLightDirection(src.label);
+    dst.status    = classifyTrafficLightStatus(src.label);
+  }
+  uint8_t classifyTrafficLightColor(const std::string& label) const
+  {
+    using kf_msgs::TrafficLight;
+
+    std::string lower = toLower(label);
+
+    // round_red / up_red / left_red / ... -> red
+    if (lower.find("red") != std::string::npos)
+    {
+      return TrafficLight::color_red;
+    }
+
+    // *_green -> green
+    if (lower.find("green") != std::string::npos)
+    {
+      return TrafficLight::color_green;
+    }
+
+    // *_yellow -> yellow
+    if (lower.find("yellow") != std::string::npos)
+    {
+      return TrafficLight::color_yellow;
+    }
+
+    // black / unknown 等
+    return TrafficLight::color_unknown;
+  }
+
+  uint8_t classifyTrafficLightDirection(const std::string& label) const
+  {
+    using kf_msgs::TrafficLight;
+
+    std::string lower = toLower(label);
+
+    // left_* 系列
+    if (lower.find("left") != std::string::npos)
+    {
+      return TrafficLight::direction_left;
+    }
+
+    // right_* 系列
+    if (lower.find("right") != std::string::npos)
+    {
+      return TrafficLight::direction_right;
+    }
+
+    // turn_around_* 系列
+    if (lower.find("turn_around") != std::string::npos)
+    {
+      return TrafficLight::direction_uturn;
+    }
+
+    // round_* / up_* / down_* 系列，认为是直行
+    if (lower.find("round") != std::string::npos ||
+        lower.find("up") != std::string::npos ||
+        lower.find("down") != std::string::npos)
+    {
+      return TrafficLight::direction_straight;
+    }
+
+    // prohibit_* / countdown_* / script_* / unknown 等没有明确方向
+    return TrafficLight::direction_unknown;
+  }
+
+  uint8_t classifyTrafficLightStatus(const std::string& label) const
+  {
+    using kf_msgs::TrafficLight;
+
+    std::string lower = toLower(label);
+
+    // 最后一类是 unknown
+    if (lower.find("unknown") != std::string::npos)
+    {
+      return TrafficLight::status_unknown;
+    }
+
+    // *_black 认为是灭灯
+    if (lower.find("black") != std::string::npos)
+    {
+      return TrafficLight::status_off;
+    }
+
+    // 其它有颜色的（red/green/yellow）都当作点亮
+    return TrafficLight::status_on;
   }
 
   uint8_t getOrAssignTrackId(uint32_t original_id)

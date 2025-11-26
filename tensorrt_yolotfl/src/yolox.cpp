@@ -236,33 +236,23 @@ void YOLOXNode::giveDimentions(autoware_msgs::DetectedObject& object) {
 }
 
 void YOLOXNode::pubTrafficLightResults(const tensorrt_yolox::ObjectArrays& detected_objects, const std_msgs::Header& header) {
-    autoware_msgs::TrafficLightResultArray out;
-    out.header = header;
-    // TODO: 1. 根据name修改msg   2. 检测到多个红绿灯怎么办， 可以根据检测框位置或其他逻辑设置？
-    int id = 0;
-    for (const auto& d : detected_objects[0]) {
-        autoware_msgs::TrafficLightResult r;
-        const std::string& label = class_name_[d.type];
-        std::cout << "label: " << label << std::endl;
+    autoware_msgs::DetectedObjectArray objects;
+    objects.header = header;
+    for (const auto & detected_object : detected_objects[0]) {
+        autoware_msgs::DetectedObject object;
+        object.header = header;
+        object.label = class_name_[detected_object.type];
+        object.valid = true;
+        object.x = detected_object.x_offset;
+        object.y = detected_object.y_offset;
+        object.width = detected_object.width;
+        object.height = detected_object.height;
+        object.score = detected_object.score;
 
-        int state = 2;
-        std::string state_str = "UNKNOWN";
-        if (label == "green" || label == "Green") {
-            state = 1; state_str = "GREEN";
-        } else if (label == "red" || label == "Red") {
-            state = 0; state_str = "RED";
-        } else if (label == "yellow" || label == "Yellow" || label == "amber") {
-            state = 0; state_str = "YELLOW";
-        }
-
-        r.light_id = id++;     // 无法确定真实ID时用递增占位
-        r.recognition_result = state;
-        r.recognition_result_str = state_str;
-        r.lane_id = -1;        // 暂无车道ID，设为-1
-        out.results.push_back(r);
+        objects.objects.push_back(object);
+        ROS_INFO_STREAM("object: " << object.label << ", score: " << object.score << ", x: " << object.x << ", y: " << object.y << ", width: " << object.width << ", height: " << object.height);
     }
-
-    pub_tlr_.publish(out);
+    pub_tlr_.publish(objects);
 }
 
 bool YOLOXNode::getProfFlag() const {
