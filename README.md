@@ -1,4 +1,6 @@
 # Prerequisites
+Ubuntu: tested with 20.04
+
 ROS: tested with Noetic, Melodic
 
 Cuda：tested with v11.8, v12.3
@@ -8,6 +10,8 @@ Cudnn: tested with v8.4
 TensorRT: tested with v8.4.3.1， v10.7.0.23
 
 OpenCV: tested with v4.9.0
+
+refer to [prepare](./doc/prepare.md) for environment prepare.
 
 # Start
 
