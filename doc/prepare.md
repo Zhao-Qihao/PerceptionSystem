@@ -62,8 +62,6 @@ TensorRT8.4.3.1下载https://developer.nvidia.com/compute/machine-learning/tenso
 cp TensorRT-8.4.3.1.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz /usr/local
 cd usr/local
 sudo tar -xpf TensorRT-8.4.3.1.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz
-
-nano ~/.bashrc 
 ```
 
 
