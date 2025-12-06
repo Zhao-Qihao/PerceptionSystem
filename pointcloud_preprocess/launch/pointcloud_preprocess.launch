@@ -1,8 +1,8 @@
 <launch>
     <arg name="clip_min_height" default="-2" />
     <arg name="clip_max_height" default="3" />
-    <arg name="input_topic" default="/lidar_top" />
-    <arg name="output_topic" default="/lidar_top_filtered" />
+    <arg name="input_topic" default="/l5_points" />
+    <arg name="output_topic" default="/l5_points_filtered" />
     <arg name="remove_self_point" default="true" />
 
     <node name="pointcloud_preprocess" pkg="pointcloud_preprocess" type="pointcloud_preprocess" output="screen">
@@ -12,7 +12,6 @@
         <param name="output_topic" value="$(arg output_topic)" />
         <param name="remove_self_point" value="$(arg remove_self_point)" />
 
-        <!-- 加载 YAML 到节点私有命名空间 (~) -->
         <rosparam file="$(find pointcloud_preprocess)/config/selfcar.yaml" command="load" />
     </node>
 </launch>

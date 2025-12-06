@@ -1,0 +1,17 @@
+<launch>
+  <arg name="input_topic" default="/detection/tracking/object_tracker/objects" />
+  <arg name="output_array_topic" default="/lidar_obstacles" />
+  <arg name="tl_input_topic" default="/detection/traffic_light/results" />
+  <arg name="tl_output_topic" default="/ifv_light" />
+  <arg name="static_speed_threshold" default="0.5" />
+  <arg name="max_lost_frames" default="30" />
+
+  <node pkg="tf_msg2kf" type="node" name="tf_msg2kf_node" output="screen">
+    <param name="input_topic" value="$(arg input_topic)" />
+    <param name="output_array_topic" value="$(arg output_array_topic)" />
+    <param name="tl_input_topic" value="$(arg tl_input_topic)" />
+    <param name="tl_output_topic" value="$(arg tl_output_topic)" />
+    <param name="static_speed_threshold" value="$(arg static_speed_threshold)" />
+    <param name="max_lost_frames" value="$(arg max_lost_frames)" />
+  </node>
+</launch>
