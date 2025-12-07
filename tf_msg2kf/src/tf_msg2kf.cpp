@@ -89,15 +89,25 @@ private:
     out.header = msg->header;
     out.obstacles.reserve(msg->objects.size());
 
+    ROS_INFO_STREAM("objectsCallback: frame=" << frame_counter_
+                    << ", received objects size=" << msg->objects.size());
+
     for (const auto& obj : msg->objects)
     {
       uint8_t track_id = getOrAssignTrackId(obj.id);
+
+      ROS_DEBUG_STREAM("objectsCallback: original_id=" << obj.id
+                       << ", assigned_track_id=" << static_cast<int>(track_id)
+                       << ", label=" << obj.label);
 
       kf_msgs::LidarObstacle o;
       o.track_id = track_id;
       fillFromDetectedObject(obj, o);
       out.obstacles.push_back(o);
     }
+
+    ROS_INFO_STREAM("objectsCallback: publishing obstacles size=" 
+                    << out.obstacles.size());
 
     cleanupOldTracks();
     pub_array_.publish(out);
