@@ -123,17 +123,45 @@ private:
 
     // 位置
     dst.position = src.pose.position;
+    dst.position.z = 0.0;
 
-    // 角点：来自 convex_hull.polygon.points (Point32 -> Point)
+    // 角点：由 position + dimensions + orientation 计算 BEV 底面 4 个角点
     dst.corners.clear();
-    const auto& poly = src.convex_hull.polygon;
-    dst.corners.reserve(poly.points.size());
-    for (const auto& p32 : poly.points)
+
+    const double cx = src.pose.position.x;
+    const double cy = src.pose.position.y;
+
+    const double half_len = 0.5 * src.dimensions.x;  // 长度方向
+    const double half_wid = 0.5 * src.dimensions.y;  // 宽度方向
+
+    const auto& q = src.pose.orientation;
+    const double qw = q.w;
+    const double qx = q.x;
+    const double qy = q.y;
+    const double qz = q.z;
+
+    const double yaw = std::atan2(2.0 * (qw * qz + qx * qy),
+                                  1.0 - 2.0 * (qy * qy + qz * qz));
+    const double cos_yaw = std::cos(yaw);
+    const double sin_yaw = std::sin(yaw);
+
+    dst.corners.reserve(4);
+
+    // 局部坐标下的四个角 (以盒子中心为原点，x 为长度，y 为宽度)
+    const double local_x[4] = {  half_len, -half_len, -half_len,  half_len };
+    const double local_y[4] = {  half_wid,  half_wid, -half_wid, -half_wid };
+
+    for (int i = 0; i < 4; ++i)
     {
+      const double lx = local_x[i];
+      const double ly = local_y[i];
+
       geometry_msgs::Point p;
-      p.x = p32.x;
-      p.y = p32.y;
-      p.z = p32.z;
+      // 先在平面内按 yaw 旋转，再平移到中心
+      p.x = cx + lx * cos_yaw - ly * sin_yaw;
+      p.y = cy + lx * sin_yaw + ly * cos_yaw;
+      p.z = 0.0;   // BEV 平面，z 固定为 0
+
       dst.corners.push_back(p);
     }
 
