@@ -1,25 +1,26 @@
 <launch>
     <arg name="detected_objects_visualizer" default="true"/>
     
-    <include file="$(find pointcloud_preprocess)/launch/pointcloud_preprocess.launch">
+    <!-- <include file="$(find pointcloud_preprocess)/launch/pointcloud_preprocess.launch">
         <arg name="input_topic" value="/l5_points"/>
         <arg name="output_topic" value="/l5_points_filtered"/>
-    </include>
+    </include> -->
     
     <group>
-        <!-- <include file="$(find lidar_centerpoint)/launch/lidar_centerpoint.launch">
-            <arg name="input/pointcloud" value="/rslidar_points_filtered"/>
-        </include> -->
-        <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
-            <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
+        <include file="$(find lidar_centerpoint)/launch/lidar_centerpoint.launch">
+            <arg name="input/pointcloud" value="/l5_points"/>
+            <arg name="output/objects" value="/detection/lidar_centerpoint/objects"/>
         </include>
+        <!-- <include file="$(find tensorrt_yoloxp)/launch/tensorrt_yoloxp_node.launch">
+            <arg name="input_topic" value="/kitti/camera_color_left/image_raw"/>
+        </include> -->
         <include file="$(find lidar_euclidean_cluster_detect)/launch/lidar_euclidean_cluster_detect.launch">
-            <arg name="points_node" value="/l5_points_filtered"/>
-            <arg name="output_frame" value="rslidar"/> 
+            <arg name="points_node" value="/l5_points"/>
+            <arg name="output_frame" value="/rslidar"/> 
         </include>
     </group>
 
-    <include file="$(find range_vision_fusion)/launch/range_vision_fusion.launch">
+    <!-- <include file="$(find range_vision_fusion)/launch/range_vision_fusion.launch">
         <arg name="detected_objects_range" value="/detection/lidar_euclidean/objects"/>
         <arg name="detected_objects_vision" value="/detection/image_detector/objects"/>
         <arg name="camera_info_src" value="/kitti/camera_color_left/camera_info"/>
@@ -28,15 +29,15 @@
     <include file="$(find lidar_object_fusion)/launch/lidar_object_fusion.launch">
         <arg name="detected_objects_range" value="/detection/lidar_centerpoint/objects"/>
         <arg name="detected_objects_vision" value="/detection/lidar_euclidean/objects"/>
-    </include>
-    <!-- <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
-        <arg name="tracker_input_topic" default="/detection/fusion_tools/objects" />
-        <arg name="tracking_frame" value="rslidar"/>
     </include> -->
+    <include file="$(find imm_ukf_pda_track)/launch/imm_ukf_pda_track.launch">
+        <arg name="tracker_input_topic" default="/detection/lidar_centerpoint/objects" />
+        <arg name="tracking_frame" value="rslidar"/>
+    </include>
     <include file="$(find tf_msg2kf)/launch/tf_msg.launch">
-    <arg name="input_topic" value="/detection/tracking/object_tracker/objects" />
-    <arg name="output_array_topic" value="/lidar_obstacles" />
-    <arg name="tl_input_topic" value="/detection/traffic_light/results" />
-    <arg name="tl_output_topic" value="/ifv_light" />
+        <arg name="input_topic" value="/detection/tracking/object_tracker/objects" />
+        <arg name="output_array_topic" value="/lidar_obstacles" />
+        <arg name="tl_input_topic" value="/detection/traffic_light/results" />
+        <arg name="tl_output_topic" value="/ifv_light" />
     </include>
 </launch>
