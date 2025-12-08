@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="input/pointcloud" default="/lidar_top"/>
+  <arg name="input/pointcloud" default="/l5_points"/>
   <arg name="output/objects" default="/detection/lidar_centerpoint/objects"/>
   <arg name="data_path" default="$(env HOME)/autoware_data"/>  <!--description="packages data and artifacts directory path"-->
   <arg name="model_name" default="centerpoint"/> <!--description="options: `centerpoint` or `centerpoint_tiny`"-->

@@ -9,5 +9,5 @@ post_process_params:
   score_threshold: 0.3
   yaw_norm_thresholds: [0.3, 0.3, 0.3, 0.3, 0.0]
 densification_params:
-  world_frame_id: lidar_top
+  world_frame_id: /rslidar
   num_past_frames: 10

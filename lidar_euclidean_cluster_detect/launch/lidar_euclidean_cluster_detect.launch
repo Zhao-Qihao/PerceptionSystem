@@ -1,10 +1,10 @@
 <!-- -->
 <launch>
   <!-- <arg name="points_node" default="/kitti/velo/pointcloud" /> -->
-  <arg name="points_node" default="/lidar_top" />
+  <arg name="points_node" default="/l5_points" />
   <arg name="remove_ground" default="true" />
   <arg name="downsample_cloud" default="false" /> <!-- Apply VoxelGrid Filter with the value given by "leaf_size"-->
-  <arg name="leaf_size" default="0.10" /><!-- Voxel Grid Filter leaf size-->
+  <arg name="leaf_size" default="0.15" /><!-- Voxel Grid Filter leaf size-->
   <arg name="cluster_size_min" default="20" /><!-- Minimum number of points to consider a cluster as valid, defualt 20 -->
   <arg name="cluster_size_max" default="100000" /><!-- Maximum number of points to allow inside a cluster, default 100000 -->
   <arg name="sync" default="false" />
@@ -13,17 +13,17 @@
   <arg name="clip_min_height" default="-3.5" />
   <arg name="clip_max_height" default="1.0" />
 
-  <arg name="keep_lanes" default="false" />
+  <arg name="keep_lanes" default="true" />
   <arg name="keep_lane_left_distance" default="9" />
   <arg name="keep_lane_right_distance" default="4.5" />
   <arg name="remove_behind_lane" default="false" />
-  <arg name="keep_behind_lane_distance" default="20" />
+  <arg name="keep_behind_lane_distance" default="3" />
   <arg name="cluster_merge_threshold" default="1.5" />
   <arg name="clustering_distance" default="0.45" />
 
   <arg name="wayarea_gridmap_layer" default="wayarea" />
 
-  <arg name="output_frame" default="lidar_top" />
+  <arg name="output_frame" default="/rslidar" />
 
   <arg name="remove_points_upto" default="0" />
 
