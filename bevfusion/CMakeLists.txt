@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 enable_language(CUDA)
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+
+# 设置CUDA架构以解决CMP0104警告
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0104 NEW)
+endif()
+set(CMAKE_CUDA_ARCHITECTURES 89)
+
 # Find catkin and other dependencies
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -22,8 +29,18 @@ option(CUDA_VERBOSE "Verbose output of CUDA modules" ON)
 option(CUDA_AVAIL "CUDA available" ON)
 
 # Check for CUDA availability
-set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-12.3")
+set(CUDA_TOOLKIT_ROOT_DIR "/usr/local/cuda-11.8")
 find_package(CUDA)
+# 查找nvrtc库
+find_library(CUDA_NVRTC_LIBRARIES
+  NAMES nvrtc
+  HINTS
+  ${CUDA_TOOLKIT_ROOT_DIR}/lib64
+  ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/lib
+  PATHS /usr/local/cuda-11.8/lib64 /usr/local/cuda-11.8/targets/x86_64-linux/lib
+  PATH_SUFFIXES lib lib64
+)
+
 if(CUDA_FOUND)
   find_library(CUBLAS_LIBRARIES cublas HINTS
     ${CUDA_TOOLKIT_ROOT_DIR}/lib64
@@ -182,7 +199,7 @@ if(TRT_AVAIL AND CUDA_AVAIL AND CUDNN_AVAIL AND SPCONV_AVAIL)
     ${CUBLAS_LIBRARIES}
     ${CUDA_curand_LIBRARY}
     ${CUDNN_LIBRARY}
-    /usr/local/cuda-12.3/targets/x86_64-linux/lib/libnvrtc.so
+    ${CUDA_NVRTC_LIBRARIES}
     ${PROJECT_NAME}_cuda_lib
     ${catkin_LIBRARIES}
     stdc++fs
